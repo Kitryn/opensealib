@@ -1,6 +1,7 @@
 const fetch = require('node-fetch')
 const search_query = require('./asset_search_query.json')
-const { logger } = require('./logger')
+const { winston } = require('./logger')
+const logger = winston.loggers.get('default')
 const { NUMERIC_TRAITS, ASSET_STRUCT } = require('./constants')
 
 const NFT_CONTRACT_ADDRESS = '0xc2c747e0f7004f9e8817db2ca4997657a7746928'
