@@ -1,6 +1,6 @@
 const fetch = require('node-fetch')
 const search_query = require('./asset_search_query.json')
-const { winston } = require('./logger')
+const winston = require('winston')
 const logger = winston.loggers.get('default')
 const { NUMERIC_TRAITS, ASSET_STRUCT } = require('./constants')
 
