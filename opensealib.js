@@ -107,7 +107,7 @@ function parse_range_query_response(json) {
         return []
     }
 
-    logger.debug({origin: 'parse_search_response', message: json})
+    // logger.debug({origin: 'parse_search_response', message: json})
 
     let output = json.map((elem) => {
         let new_elem = JSON.parse(JSON.stringify(ASSET_STRUCT))
@@ -144,7 +144,7 @@ function parse_single_query_response(json) {
         return []
     }
     
-    logger.debug({origin: 'parse_single_order', message: json})
+    // logger.debug({origin: 'parse_single_order', message: json})
 
     let output = JSON.parse(JSON.stringify(ASSET_STRUCT))
 
