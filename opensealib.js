@@ -4,8 +4,11 @@ const winston = require('winston')
 const logger = winston.loggers.get('default')
 const { NUMERIC_TRAITS, ASSET_STRUCT } = require('./constants')
 
-const NFT_CONTRACT_ADDRESS = '0xc2c747e0f7004f9e8817db2ca4997657a7746928'
+// HASHMASKS
+// const NFT_CONTRACT_ADDRESS = '0xc2c747e0f7004f9e8817db2ca4997657a7746928'
 
+// Waifu add 
+const NFT_CONTRACT_ADDRESS = '0x2216d47494E516d8206B70FCa8585820eD3C4946'
 
 async function fetch_from_range(start = 0, end = 16383) {
     function query_builder(a, b) {
@@ -96,6 +99,11 @@ async function fetch_all_from_query(json) {
 async function fetch_single_asset(id) {
     let res = await fetch(`https://api.opensea.io/api/v1/asset/${NFT_CONTRACT_ADDRESS}/${id}/`)
         .then(res => res.json())
+        .catch(error => {
+            logger.error(`Error when fetching single asset id ${id}!`)
+            logger.error(error)
+            return {}
+        })
     
     return parse_single_query_response(res)
 }
@@ -138,10 +146,10 @@ function parse_range_query_response(json) {
 }
 
 function parse_single_query_response(json) {
-    if (!json) {
+    if (!json || !json.owner) {
         console.error("Invalid response!")
         console.error(json)
-        return []
+        return null
     }
     
     // logger.debug({origin: 'parse_single_order', message: json})
@@ -213,3 +221,5 @@ function parse_single_query_response(json) {
 module.exports = {
     fetch_from_range, fetch_single_asset
 }
+
+
