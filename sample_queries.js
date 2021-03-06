@@ -1,47 +1,3 @@
-// graphql queries
-// X-API-KEY: 0106d29713754b448f4513d7a66d0875
-// PriceHistoryQuery
-// Query:
-// {
-//   "id": "PriceHistoryQuery",
-//   "query": "query PriceHistoryQuery(\n  $archetype: ArchetypeInputType\n  $bucketSize: BucketSize = WEEK\n  $cutoff: DateTime\n  $collection: CollectionSlug\n) {\n  ...PriceHistory_data_XmWqM\n}\n\nfragment PriceHistoryGraph_data on TradeHistoryType {\n  results {\n    bucketStart\n    bucketEnd\n    quantity\n    volume {\n      asset {\n        assetContract {\n          symbol\n          id\n        }\n        decimals\n        id\n      }\n      quantity\n      id\n    }\n  }\n}\n\nfragment PriceHistoryStats_data on TradeHistoryType {\n  results {\n    quantity\n    volume {\n      asset {\n        assetContract {\n          symbol\n          id\n        }\n        decimals\n        id\n      }\n      quantity\n      id\n    }\n  }\n}\n\nfragment PriceHistory_data_XmWqM on Query {\n  tradeHistory(archetype: $archetype, minTime: $cutoff, collection: $collection, bucketSize: $bucketSize) {\n    ...PriceHistoryStats_data\n    ...PriceHistoryGraph_data\n  }\n}\n",
-//   "variables": {
-//     "archetype": {
-//       "assetContractAddress": "0xc2c747e0f7004f9e8817db2ca4997657a7746928",
-//       "tokenId": "2062"
-//     },
-//     "bucketSize": "DAY",
-//     "cutoff": null,
-//     "collection": null
-//   }
-// }
-// Response:
-// {
-//     "data": {
-//       "tradeHistory": {
-//         "results": [
-//           {
-//             "quantity": 1.0,
-//             "volume": {
-//               "asset": {
-//                 "assetContract": {
-//                   "symbol": "ETH",
-//                   "id": "QXNzZXRDb250cmFjdFR5cGU6MjMzMQ=="
-//                 },
-//                 "decimals": 18,
-//                 "id": "QXNzZXRUeXBlOjEzNjg5MDc3"
-//               },
-//               "quantity": "3464468853565120021",
-//               "id": "QXNzZXRRdWFudGl0eVR5cGU6NTA2ODU1NTA5OTg3MTg2NDMwMTA1MTgzNzk2NjI1MjM2OTk1NzU="
-//             },
-//             "bucketStart": "2021-02-15T00:00:00",
-//             "bucketEnd": "2021-02-16T00:00:00"
-//           }
-//         ]
-//       }
-//     }
-//   }
-// Suspect this is the Price History graph
 // ---------------------------
 // OrdersQuery -- makerArchetype filled -- returns Sell listings
 // takerAssetIsPayment is true, makerAssetIsPayment is false
@@ -550,6 +506,18 @@
 //     }
 //   }
 
+
+
+
+
+
+
+
+
+
+
+
+
 // --------------
 // EventHistoryQuery
 // This returns the Trading History table section -- unneeded for now
@@ -572,3 +540,53 @@
 //       "identity": null
 //     }
 //   }
+
+
+
+
+
+
+// graphql queries
+// X-API-KEY: 0106d29713754b448f4513d7a66d0875
+// PriceHistoryQuery
+// Query:
+// {
+//   "id": "PriceHistoryQuery",
+//   "query": "query PriceHistoryQuery(\n  $archetype: ArchetypeInputType\n  $bucketSize: BucketSize = WEEK\n  $cutoff: DateTime\n  $collection: CollectionSlug\n) {\n  ...PriceHistory_data_XmWqM\n}\n\nfragment PriceHistoryGraph_data on TradeHistoryType {\n  results {\n    bucketStart\n    bucketEnd\n    quantity\n    volume {\n      asset {\n        assetContract {\n          symbol\n          id\n        }\n        decimals\n        id\n      }\n      quantity\n      id\n    }\n  }\n}\n\nfragment PriceHistoryStats_data on TradeHistoryType {\n  results {\n    quantity\n    volume {\n      asset {\n        assetContract {\n          symbol\n          id\n        }\n        decimals\n        id\n      }\n      quantity\n      id\n    }\n  }\n}\n\nfragment PriceHistory_data_XmWqM on Query {\n  tradeHistory(archetype: $archetype, minTime: $cutoff, collection: $collection, bucketSize: $bucketSize) {\n    ...PriceHistoryStats_data\n    ...PriceHistoryGraph_data\n  }\n}\n",
+//   "variables": {
+//     "archetype": {
+//       "assetContractAddress": "0xc2c747e0f7004f9e8817db2ca4997657a7746928",
+//       "tokenId": "2062"
+//     },
+//     "bucketSize": "DAY",
+//     "cutoff": null,
+//     "collection": null
+//   }
+// }
+// Response:
+// {
+//     "data": {
+//       "tradeHistory": {
+//         "results": [
+//           {
+//             "quantity": 1.0,
+//             "volume": {
+//               "asset": {
+//                 "assetContract": {
+//                   "symbol": "ETH",
+//                   "id": "QXNzZXRDb250cmFjdFR5cGU6MjMzMQ=="
+//                 },
+//                 "decimals": 18,
+//                 "id": "QXNzZXRUeXBlOjEzNjg5MDc3"
+//               },
+//               "quantity": "3464468853565120021",
+//               "id": "QXNzZXRRdWFudGl0eVR5cGU6NTA2ODU1NTA5OTg3MTg2NDMwMTA1MTgzNzk2NjI1MjM2OTk1NzU="
+//             },
+//             "bucketStart": "2021-02-15T00:00:00",
+//             "bucketEnd": "2021-02-16T00:00:00"
+//           }
+//         ]
+//       }
+//     }
+//   }
+// Suspect this is the Price History graph

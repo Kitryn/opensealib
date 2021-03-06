@@ -2,13 +2,14 @@ const fetch = require('node-fetch')
 const search_query = require('./asset_search_query.json')
 const winston = require('winston')
 const logger = winston.loggers.get('default')
-const { NUMERIC_TRAITS, ASSET_STRUCT } = require('./constants')
+const { NUMERIC_TRAITS, DECIMALS } = require('./constants')
+const { ASSET_STRUCT, ITEM_QUERY } = require('./structs')
 
 // HASHMASKS
-// const NFT_CONTRACT_ADDRESS = '0xc2c747e0f7004f9e8817db2ca4997657a7746928'
+const NFT_CONTRACT_ADDRESS = '0xc2c747e0f7004f9e8817db2ca4997657a7746928'
 
 // Waifu add 
-const NFT_CONTRACT_ADDRESS = '0x2216d47494E516d8206B70FCa8585820eD3C4946'
+// const NFT_CONTRACT_ADDRESS = '0x2216d47494E516d8206B70FCa8585820eD3C4946'
 
 async function fetch_from_range(start = 0, end = 16383) {
     function query_builder(a, b) {
@@ -105,6 +106,8 @@ async function fetch_single_asset(id) {
             return {}
         })
     
+    logger.info(res)
+
     return parse_single_query_response(res)
 }
 
@@ -218,8 +221,92 @@ function parse_single_query_response(json) {
     return output
 }
 
+async function _fetch_single_asset(id) {
+    let itemQuery = JSON.parse(JSON.stringify(ITEM_QUERY))
+    itemQuery.variables.archetype.assetContractAddress = NFT_CONTRACT_ADDRESS
+    itemQuery.variables.archetype.tokenId = id
+
+    let res = await fetch('https://api.opensea.io/graphql/', {
+        method: 'post',
+        body: JSON.stringify(itemQuery),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-API-KEY': '0106d29713754b448f4513d7a66d0875'
+        }
+    })
+    .then(res => res.json())
+    .catch(err => {
+        logger.error(`Error fetching id ${id}`)
+        logger.error(err)
+        return null
+    })
+
+    return parse_item_query(res)
+}
+
+function parse_item_query(json) {
+    if (!json || !json.data) {
+        logger.error("Invalid response!")
+        logger.error(json)
+        return null
+    }
+
+    const data = json.data
+    let output = JSON.parse(JSON.stringify(ASSET_STRUCT))
+
+    output.assetContractAddress = data.archetype.asset.assetContract.account.address
+    output.tokenId = data.archetype.asset.tokenId
+    output.name = data.archetype.asset.name
+    
+    let owner = data.archetype.asset.assetOwners.edges
+    if (owner.length !== 0) {
+        output.owner = owner[0].node.owner.user ? owner[0].node.owner.user.username : null
+        output.ownerContractAddress = owner[0].node.owner.address
+    }
+
+    let lastSale = data.archetype.asset.assetEventData.lastSale
+    if (lastSale) {
+        output.lastSale.symbol = lastSale.unitPriceQuantity.asset.symbol
+        output.lastSale.quantity = parseInt(lastSale.unitPriceQuantity.quantity) / (10 ** lastSale.unitPriceQuantity.asset.decimals)
+    }
+    
+    let bestBid = data.tradeSummary.bestBid
+    if (bestBid) {
+        output.bestBid.orderType = bestBid.orderType
+        output.bestBid.symbol = bestBid.makerAssetBundle.assetQuantities.edges[0].node.asset.symbol
+        output.bestBid.quantity = parseInt(bestBid.makerAssetBundle.assetQuantities.edges[0].node.quantity) / (10 ** bestBid.makerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
+        output.bestBid.username = bestBid.maker.user.username
+        output.bestBid.userContractAddress = bestBid.maker.address
+    }
+
+    let bestAsk = data.tradeSummary.bestAsk
+    if (bestAsk) {
+        output.bestAsk.orderType = bestAsk.orderType
+        output.bestAsk.symbol = bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.symbol
+        output.bestAsk.username = bestAsk.maker.user.username
+        output.bestAsk.userContractAddress = bestAsk.maker.address
+        
+        let quantity = parseInt(bestAsk.takerAssetBundle.assetQuantities.edges[0].node.quantity)
+        
+        if (bestAsk.orderType !== 'DUTCH') {
+            output.bestAsk.quantity = quantity / (10 ** bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
+            // WARNING -- ENGLISH AUCTIONS BESTASK IS NOT ACTUALLY BESTASK
+            // IF TYPE IS ENGLISH THEN CHECK BESTBID
+        } else {
+            // WARNING -- DUTCH AUCTIONS ARE ESTIMATED PRICE AT THE MOMENT!
+            let auctionDuration = Date.parse(bestAsk.openedAt) - Date.parse(bestAsk.closedAt)
+            let remainingDuration = Date.now() - Date.parse(bestAsk.closedAt)
+            let difference = quantity - parseInt(bestAsk.dutchAuctionFinalPrice)
+            let currentPrice = parseInt(bestAsk.dutchAuctionFinalPrice) + (difference * (remainingDuration / auctionDuration))
+            output.bestAsk.quantity = currentPrice / (10 ** bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
+        }
+    }
+
+    return output
+}
+
 module.exports = {
-    fetch_from_range, fetch_single_asset
+    fetch_from_range, fetch_single_asset, _fetch_single_asset
 }
 
 
