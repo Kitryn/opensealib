@@ -97,20 +97,6 @@ async function fetch_all_from_query(json) {
     return parse_range_query_response(output)
 }
 
-async function fetch_single_asset(id) {
-    let res = await fetch(`https://api.opensea.io/api/v1/asset/${NFT_CONTRACT_ADDRESS}/${id}/`)
-        .then(res => res.json())
-        .catch(error => {
-            logger.error(`Error when fetching single asset id ${id}!`)
-            logger.error(error)
-            return {}
-        })
-    
-    logger.info(res)
-
-    return parse_single_query_response(res)
-}
-
 function parse_range_query_response(json) {
     if (!json) {
         console.error("Invalid response!")
@@ -148,80 +134,7 @@ function parse_range_query_response(json) {
     return output
 }
 
-function parse_single_query_response(json) {
-    if (!json || !json.owner) {
-        console.error("Invalid response!")
-        console.error(json)
-        return null
-    }
-    
-    // logger.debug({origin: 'parse_single_order', message: json})
-
-    let output = JSON.parse(JSON.stringify(ASSET_STRUCT))
-
-    output.tokenId = json.token_id
-    output.name = json.name
-    
-    let tmp = null
-    if (!json.owner.user || !json.owner.user.username) {
-        tmp = json.owner.address.slice(2,8).toUpperCase()
-    } else {
-        tmp = json.owner.user.username
-    }
-    
-    output.owner = tmp
-
-    if (json.last_sale) {
-        output.lastSale.symbol = json.last_sale.payment_token.symbol
-        output.lastSale.quantity = json.last_sale.total_price
-    }
-
-    if (!json.orders) return output
-
-    // side 0 is offer/bid
-    // side 1 is list/ask
-
-    let sale_kind = ['BASIC', 'DUTCH', 'ENGLISH']
-
-    for (order of json.orders) {
-        let side = null
-        if (order.side == 0) {
-            side = output.bestBid
-        } else if (order.side == 1) {
-            side = output.bestAsk
-        } else {
-            logger.warn(`Invalid order side for mask ${json.id}! Got ${order.side}`)
-            continue
-        }
-
-        let test_quantity = order.current_price
-        let swap = false
-
-        switch(parseInt(order.side)) {
-            case 0:
-                // offer/bid, swap if the bid is the highest
-                if (parseInt(test_quantity) >= parseInt(side.quantity)) swap = true
-                break
-            case 1:
-                // list/ask, swap if bid is lowest?! will there even be more than one?
-                if (parseInt(test_quantity) <= parseInt(side.quantity)) swap = true
-                break
-            default:
-                logger.error('No side? Should not have reached this!')
-        }
-
-        if (swap || !side.quantity) {
-            side.username = order.maker.user ? order.maker.user.username : null
-            side.symbol = order.payment_token_contract.symbol
-            side.quantity = parseInt(order.current_price).toString()
-            side.orderType = sale_kind[parseInt(order.sale_kind)]  // DOES NOT DETECT ENGLISH AUCTION SALES, LISTS THEM AS BASIC!!
-        }
-    }
-
-    return output
-}
-
-async function _fetch_single_asset(id) {
+async function fetch_single_asset(id) {
     let itemQuery = JSON.parse(JSON.stringify(ITEM_QUERY))
     itemQuery.variables.archetype.assetContractAddress = NFT_CONTRACT_ADDRESS
     itemQuery.variables.archetype.tokenId = id
@@ -306,7 +219,7 @@ function parse_item_query(json) {
 }
 
 module.exports = {
-    fetch_from_range, fetch_single_asset, _fetch_single_asset
+    fetch_from_range, fetch_single_asset
 }
 
 
