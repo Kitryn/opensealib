@@ -188,7 +188,7 @@ function parse_item_query(json) {
         output.bestBid.orderType = bestBid.orderType
         output.bestBid.symbol = bestBid.makerAssetBundle.assetQuantities.edges[0].node.asset.symbol
         output.bestBid.quantity = parseInt(bestBid.makerAssetBundle.assetQuantities.edges[0].node.quantity) / (10 ** bestBid.makerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
-        output.bestBid.username = bestBid.maker.user.username
+        output.bestBid.username = bestBid.maker.user ? bestBid.maker.user.username : null
         output.bestBid.userContractAddress = bestBid.maker.address
     }
 
@@ -196,7 +196,7 @@ function parse_item_query(json) {
     if (bestAsk) {
         output.bestAsk.orderType = bestAsk.orderType
         output.bestAsk.symbol = bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.symbol
-        output.bestAsk.username = bestAsk.maker.user.username
+        output.bestAsk.username = bestAsk.maker.user ? bestAsk.maker.user.username : null
         output.bestAsk.userContractAddress = bestAsk.maker.address
         
         let quantity = parseInt(bestAsk.takerAssetBundle.assetQuantities.edges[0].node.quantity)
