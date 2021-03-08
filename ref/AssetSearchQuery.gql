@@ -25,7 +25,8 @@ query AssetSearchQuery(
     ...AssetSearch_data_1vY0Ya
   }
 }
-\nfragment AssetMedia_asset on AssetType {
+
+fragment AssetMedia_asset on AssetType {
   animationUrl
   backgroundColor
   collection {
@@ -44,14 +45,16 @@ query AssetSearchQuery(
   tokenId
   imageUrl
 }
-\nfragment AssetQuantity_data on AssetQuantityType {
+
+fragment AssetQuantity_data on AssetQuantityType {
   asset {
     ...Price_data
     id
   }
   quantity
 }
-\nfragment AssetSearchFilter_data_3zwQJ6 on Query {
+
+fragment AssetSearchFilter_data_3zwQJ6 on Query {
   ...CollectionFilter_data_1W5IQW
   collection(collection: $collection) {
     numericTraits {
@@ -70,7 +73,8 @@ query AssetSearchQuery(
   }
   ...PaymentFilter_data_2YoIWt
 }
-\nfragment AssetSearchList_data_4jiSzF on SearchResultType {
+
+fragment AssetSearchList_data_4jiSzF on SearchResultType {
   asset {
     assetContract {
       account {
@@ -92,7 +96,8 @@ query AssetSearchQuery(
   }
   ...Asset_data_fdERL
 }
-\nfragment AssetSearch_data_1vY0Ya on Query {
+
+fragment AssetSearch_data_1vY0Ya on Query {
   ...CollectionHeadMetadata_data_2YoIWt
   ...AssetSearchFilter_data_3zwQJ6
   ...CategoryBar_data
@@ -112,7 +117,8 @@ query AssetSearchQuery(
     }
   }
 }
-\nfragment AssetSelectionItem_data on AssetType {
+
+fragment AssetSelectionItem_data on AssetType {
   backgroundColor
   collection {
     displayData {
@@ -125,7 +131,8 @@ query AssetSearchQuery(
   name
   relayId
 }
-\nfragment Asset_data_fdERL on SearchResultType {
+
+fragment Asset_data_fdERL on SearchResultType {
   asset {
     assetContract {
       account {
@@ -235,14 +242,16 @@ query AssetSearchQuery(
     id
   }
 }
-\nfragment CategoryBar_data on Query {
+
+fragment CategoryBar_data on Query {
   categories {
     imageUrl
     name
     slug
   }
 }
-\nfragment CollectionFilter_data_1W5IQW on Query {
+
+fragment CollectionFilter_data_1W5IQW on Query {
   selectedCollections: collections(first: 25, collections: $collections, includeHidden: true) {
     edges {
       node {
@@ -272,7 +281,8 @@ query AssetSearchQuery(
     }
   }
 }
-\nfragment CollectionHeadMetadata_data_2YoIWt on Query {
+
+fragment CollectionHeadMetadata_data_2YoIWt on Query {
   collection(collection: $collection) {
     bannerImageUrl
     description
@@ -281,20 +291,23 @@ query AssetSearchQuery(
     id
   }
 }
-\nfragment CollectionModalContent_data on CollectionType {
+
+fragment CollectionModalContent_data on CollectionType {
   description
   imageUrl
   name
   slug
 }
-\nfragment NumericTraitFilter_data on NumericTraitTypePair {
+
+fragment NumericTraitFilter_data on NumericTraitTypePair {
   key
   value {
     max
     min
   }
 }
-\nfragment PaymentFilter_data_2YoIWt on Query {
+
+fragment PaymentFilter_data_2YoIWt on Query {
   paymentAssets(first: 10) {
     edges {
       node {
@@ -325,7 +338,8 @@ query AssetSearchQuery(
     id
   }
 }
-\nfragment Price_data on AssetType {
+
+fragment Price_data on AssetType {
   decimals
   imageUrl
   symbol
@@ -335,7 +349,8 @@ query AssetSearchQuery(
     id
   }
 }
-\nfragment SearchPills_data_2Kg4Sq on Query {
+
+fragment SearchPills_data_2Kg4Sq on Query {
   selectedCollections: collections(first: 25, collections: $collections, includeHidden: true) {
     edges {
       node {
@@ -348,14 +363,16 @@ query AssetSearchQuery(
     }
   }
 }
-\nfragment StringTraitFilter_data on StringTraitType {
+
+fragment StringTraitFilter_data on StringTraitType {
   counts {
     count
     value
   }
   key
 }
-\nfragment asset_url on AssetType {
+
+fragment asset_url on AssetType {
   assetContract {
     account {
       address
@@ -369,7 +386,8 @@ query AssetSearchQuery(
   }
   tokenId
 }
-\nfragment priceESOrderHelper_data on ESOrderType {
+
+fragment priceESOrderHelper_data on ESOrderType {
   dutchAuctionFinalPrice
   openedAt
   priceFnEndedAt

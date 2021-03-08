@@ -93,7 +93,7 @@ async function fetch_all_from_query(json) {
         currentCursor = endCursor
     }
 
-    // logger.info(output)
+    logger.info(output)
 
     return parse_range_query_response(output)
 }
