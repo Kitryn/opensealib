@@ -102,7 +102,7 @@ class OpenSeaLib {
             if (breakLoop) break
 
             edgeCount += edges.length
-            logger.verbose(edgeCount + '/' + totalCount)
+            logger.info(edgeCount + '/' + totalCount)
 
             output = output.concat(edges)
             if (!hasNextPage || !endCursor) break
