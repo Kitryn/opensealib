@@ -35,7 +35,7 @@ async function fetch_from_range(start = 0, end = 16383) {
 
     output = output.map((elem) => {
         if (elem.status != 'fulfilled') {
-            console.error(elem)
+            logger.error(elem)
             throw 'Error in request!'
         }
 
@@ -62,28 +62,30 @@ async function fetch_all_from_query(json) {
             method: 'post',
             body: JSON.stringify(json),
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-API-KEY': '0106d29713754b448f4513d7a66d0875'
             }
         })
         .then(res => res.json())
         .then(res_json => {
             if (!res_json.data.query.search) {
-                console.error(res_json)
+                logger.error(res_json)
+                throw 'Error in fetch response!'
             }
             edges = res_json.data.query.search.edges
             endCursor = res_json.data.query.search.pageInfo.endCursor
             totalCount = res_json.data.query.search.totalCount
             hasNextPage = res_json.data.query.search.pageInfo.hasNextPage
         }).catch(err => {
-            console.error(err)
-            console.error("Current Cursor: " + currentCursor)
+            logger.error(err)
+            logger.error("Current Cursor: " + currentCursor)
             breakLoop = true
         })
 
         if (breakLoop) break
 
         edgeCount += edges.length
-        console.log(edgeCount + '/' + totalCount)
+        logger.verbose(edgeCount + '/' + totalCount)
 
         output = output.concat(edges)
         if (!hasNextPage || !endCursor) break
@@ -91,13 +93,15 @@ async function fetch_all_from_query(json) {
         currentCursor = endCursor
     }
 
+    // logger.info(output)
+
     return parse_range_query_response(output)
 }
 
 function parse_range_query_response(json) {
     if (!json) {
-        console.error("Invalid response!")
-        console.error(json)
+        logger.error("Invalid response!")
+        logger.error(json)
         return []
     }
 
@@ -108,21 +112,27 @@ function parse_range_query_response(json) {
         new_elem.tokenId = elem.node.asset.tokenId
         new_elem.name = elem.node.asset.name
         
-        if (elem.node.asset.assetEventData.lastSale) {
-            new_elem.lastSale.symbol = elem.node.asset.assetEventData.lastSale.unitPriceQuantity.asset.symbol
-            new_elem.lastSale.quantity = elem.node.asset.assetEventData.lastSale.unitPriceQuantity.quantity
+        let lastSale = elem.node.asset.assetEventData.lastSale
+        if (lastSale) {
+            new_elem.lastSale.symbol = lastSale.unitPriceQuantity.asset.symbol
+            let quantity = parseInt(lastSale.unitPriceQuantity.quantity)
+            new_elem.lastSale.quantity = quantity / (10 ** lastSale.unitPriceQuantity.asset.decimals)
         }
 
-        if (elem.node.asset.orderData.bestBid) {
-            new_elem.bestBid.orderType = elem.node.asset.orderData.bestBid.orderType
-            new_elem.bestBid.symbol = elem.node.asset.orderData.bestBid.paymentAssetQuantity.asset.symbol
-            new_elem.bestBid.quantity = elem.node.asset.orderData.bestBid.paymentAssetQuantity.quantity
+        let bestBid = elem.node.asset.orderData.bestBid
+        if (bestBid) {
+            new_elem.bestBid.orderType = bestBid.orderType
+            new_elem.bestBid.symbol = bestBid.paymentAssetQuantity.asset.symbol
+            let quantity = parseInt(bestBid.paymentAssetQuantity.quantity)
+            new_elem.bestBid.quantity = quantity / (10 ** bestBid.paymentAssetQuantity.asset.decimals) 
         }
 
-        if (elem.node.asset.orderData.bestAsk) {
-            new_elem.bestAsk.orderType = elem.node.asset.orderData.bestAsk.orderType
-            new_elem.bestAsk.symbol = elem.node.asset.orderData.bestAsk.paymentAssetQuantity.asset.symbol
-            new_elem.bestAsk.quantity = elem.node.asset.orderData.bestAsk.paymentAssetQuantity.quantity
+        let bestAsk = elem.node.asset.orderData.bestAsk
+        if (bestAsk) {
+            new_elem.bestAsk.orderType = bestAsk.orderType
+            new_elem.bestAsk.symbol = bestAsk.paymentAssetQuantity.asset.symbol
+            let quantity = parseInt(bestAsk.paymentAssetQuantity.quantity)
+            new_elem.bestAsk.quantity = quantity / (10 ** bestAsk.paymentAssetQuantity.asset.decimals)
         }
 
         return new_elem
