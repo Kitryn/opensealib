@@ -106,7 +106,7 @@ function parse_range_query_response(json) {
     // logger.debug({origin: 'parse_search_response', message: json})
 
     let output = json.map((elem) => {
-        let new_elem = JSON.parse(JSON.stringify(ASSET_STRUCT))
+        let new_elem = new ASSET_STRUCT()
         new_elem.tokenId = elem.node.asset.tokenId
         new_elem.name = elem.node.asset.name
         
@@ -164,7 +164,7 @@ function parse_item_query(json) {
     }
 
     const data = json.data
-    let output = JSON.parse(JSON.stringify(ASSET_STRUCT))
+    let output = new ASSET_STRUCT()
 
     output.assetContractAddress = data.archetype.asset.assetContract.account.address
     output.tokenId = data.archetype.asset.tokenId
