@@ -1,7 +1,6 @@
 const fetch = require('node-fetch')
 const winston = require('winston')
 const logger = winston.loggers.get('default')
-const { NUMERIC_TRAITS } = require('./lib/constants')
 const { ASSET_STRUCT, ITEM_QUERY, SEARCH_QUERY } = require('./lib/structs')
 
 // HASHMASKS
@@ -13,7 +12,6 @@ const NFT_CONTRACT_ADDRESS = '0xc2c747e0f7004f9e8817db2ca4997657a7746928'
 async function fetch_from_range(start = 0, end = 16383) {
     function query_builder(a, b) {
         let output = new SEARCH_QUERY()
-        output.variables.numericTraits = JSON.parse(JSON.stringify(NUMERIC_TRAITS))
         
         output.variables.numericTraits[0].ranges[0].min = a;
         output.variables.numericTraits[0].ranges[0].max = b;
