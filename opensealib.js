@@ -12,7 +12,7 @@ const NFT_CONTRACT_ADDRESS = '0xc2c747e0f7004f9e8817db2ca4997657a7746928'
 
 async function fetch_from_range(start = 0, end = 16383) {
     function query_builder(a, b) {
-        let output = JSON.parse(JSON.stringify(SEARCH_QUERY))
+        let output = new SEARCH_QUERY()
         output.variables.numericTraits = JSON.parse(JSON.stringify(NUMERIC_TRAITS))
         
         output.variables.numericTraits[0].ranges[0].min = a;
@@ -134,7 +134,7 @@ function parse_range_query_response(json) {
 }
 
 async function fetch_single_asset(id) {
-    let itemQuery = JSON.parse(JSON.stringify(ITEM_QUERY))
+    let itemQuery = new ITEM_QUERY()
     itemQuery.variables.archetype.assetContractAddress = NFT_CONTRACT_ADDRESS
     itemQuery.variables.archetype.tokenId = id
 
