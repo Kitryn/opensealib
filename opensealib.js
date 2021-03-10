@@ -1,12 +1,13 @@
 const fetch = require('node-fetch')
 const winston = require('winston')
 const logger = winston.loggers.get('default')
-const { ASSET_STRUCT, ItemQuery, AssetSearchQuery } = require('./lib/structs')
+const { ASSET_STRUCT, ItemQuery, AssetSearchQuery, EventHistoryPollQuery, EventHistoryQuery } = require('./lib/structs')
 
 const X_API_KEY = '0106d29713754b448f4513d7a66d0875'
 
-
 class OpenSeaLib {
+    last_bid_poll_timestamp = null
+
     constructor(address, collection) {
         this.nft_contract_address = address
         this.collection = collection
@@ -111,6 +112,66 @@ class OpenSeaLib {
         }
 
         return this._parse_range_query_response(output)
+    }
+
+    async fetch_recent_bids() {
+        let query = new EventHistoryPollQuery()
+        query.init(this.collection, this.last_bid_poll_timestamp ? this.last_bid_poll_timestamp : undefined)
+
+        let res = await fetch('https://api.opensea.io/graphql/', {
+            method: 'post',
+            body: JSON.stringify(query),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': X_API_KEY,
+            }
+        })
+        .then(res => res.json())
+        .catch(err => {
+            logger.error(`Error polling bid history for ${this.collection}`)
+            logger.error(err)
+            return null
+        })
+
+        return this._parse_recent_bids(res)
+    }
+
+    _parse_recent_bids(json) {
+        if (!json || !json.data || !json.data.assetEvents || !json.data.assetEvents.edges) {
+            logger.error("Invalid response!")
+            logger.error(json)
+            return []
+        }
+        
+        if (json.data.assetEvents.edges.length >= 1) {
+            this.last_bid_poll_timestamp = json.data.assetEvents.edges[0].node.eventTimestamp
+        } else {
+            if (!this.last_bid_poll_timestamp) {
+                this.last_bid_poll_timestamp = (new Date(Date.now() - 11*1000)).toISOString()               
+            }
+        }
+
+        let output = json.data.assetEvents.edges.map(elem => {
+            let asset = new ASSET_STRUCT()
+            let node = elem.node            
+
+            asset.assetContractAddress = node.assetQuantity.asset.assetContract.account.address
+            asset.tokenId = node.assetQuantity.asset.tokenId
+            // asset.owner = NOT IMPLEMENTED YET
+            // asset.ownerContractAddress NOT IMPLEMENTED
+            asset.name = node.assetQuantity.asset.name
+
+            asset.bestBid.orderType = 'BASIC'
+            asset.bestBid.symbol = node.price.asset.symbol
+            let quantity = parseInt(node.price.quantity)
+            asset.bestBid.quantity = quantity / (10 ** node.price.asset.decimals)
+            asset.bestBid.username = node.fromAccount.user ? node.fromAccount.user.username : null
+            asset.bestBid.userContractAddress = node.fromAccount.address
+
+            return asset
+        })
+
+        return output
     }
 
     _parse_range_query_response(json) {
