@@ -156,7 +156,7 @@ class OpenSeaLib {
             let node = elem.node            
 
             asset.assetContractAddress = node.assetQuantity.asset.assetContract.account.address
-            asset.tokenId = node.assetQuantity.asset.tokenId
+            asset.tokenId = parseInt(node.assetQuantity.asset.tokenId)
             // asset.owner = NOT IMPLEMENTED YET
             // asset.ownerContractAddress NOT IMPLEMENTED
             asset.name = node.assetQuantity.asset.name
@@ -187,7 +187,7 @@ class OpenSeaLib {
             let new_elem = new ASSET_STRUCT()
             let asset = elem.node.asset
         
-            new_elem.tokenId = asset.tokenId
+            new_elem.tokenId = parseInt(asset.tokenId)
             new_elem.name = asset.name
             new_elem.assetContractAddress = asset.assetContract.account.address
 
@@ -239,7 +239,7 @@ class OpenSeaLib {
         let output = new ASSET_STRUCT()
 
         output.assetContractAddress = data.archetype.asset.assetContract.account.address
-        output.tokenId = data.archetype.asset.tokenId
+        output.tokenId = parseInt(data.archetype.asset.tokenId)
         output.name = data.archetype.asset.name
     
         let owner = data.archetype.asset.assetOwners.edges
