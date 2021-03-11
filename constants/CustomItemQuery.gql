@@ -27,6 +27,7 @@ query itemQuery(
           }
         }
       }
+      ...trait_data
     }
   }
   tradeSummary(archetype: $archetype) {
@@ -519,5 +520,27 @@ fragment wallet_accountKey on AccountType {
   }
   user {
     username
+  }
+}
+
+fragment trait_data on AssetType {
+  traits(first:100) {
+    edges {
+      node{
+        traitType
+        value
+        floatValue
+        dateValue
+        traitCount
+        displayType
+        maxValue
+        id
+        intValue
+      }
+    }
+    pargeInfo {
+      hasNextPage
+      endCursor
+    }
   }
 }

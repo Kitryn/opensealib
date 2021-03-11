@@ -241,7 +241,13 @@ class OpenSeaLib {
         output.assetContractAddress = data.archetype.asset.assetContract.account.address
         output.tokenId = parseInt(data.archetype.asset.tokenId)
         output.name = data.archetype.asset.name
-    
+        
+        // TODO: HACKY
+        // if (output.assetContractAddress.toUpperCase() === '0x31385d3520bced94f77aae104b406994d8f2168c'.toUpperCase()) {
+        //     // bastardganpunkv2
+        //     output.traits = data.archetype.asset.traits.edges
+        // }
+
         let owner = data.archetype.asset.assetOwners.edges
         if (owner.length !== 0) {
             output.owner = owner[0].node.owner.user ? owner[0].node.owner.user.username : null
