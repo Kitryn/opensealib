@@ -163,6 +163,7 @@ class OpenSeaLib {
 
             asset.bestBid.orderType = 'BASIC'
             asset.bestBid.symbol = node.price.asset.symbol
+            asset.bestBid.usdSpotPrice = node.price.asset.usdSpotPrice
             let quantity = parseInt(node.price.quantity)
             asset.bestBid.quantity = quantity / (10 ** node.price.asset.decimals)
             asset.bestBid.username = node.fromAccount.user ? node.fromAccount.user.username : null
@@ -184,45 +185,48 @@ class OpenSeaLib {
         // logger.debug({origin: 'parse_search_response', message: json})
 
         let output = json.map((elem) => {
-            let new_elem = new ASSET_STRUCT()
-            let asset = elem.node.asset
+            let asset = new ASSET_STRUCT()
+            let data = elem.node.asset
         
-            new_elem.tokenId = parseInt(asset.tokenId)
-            new_elem.name = asset.name
-            new_elem.assetContractAddress = asset.assetContract.account.address
+            asset.tokenId = parseInt(data.tokenId)
+            asset.name = data.name
+            asset.assetContractAddress = data.assetContract.account.address
 
-            let owner = asset.assetOwners.edges
+            let owner = data.assetOwners.edges
             if (owner.length !== 0) {
-                new_elem.owner = owner[0].node.owner.user ? owner[0].node.owner.user.username : null
-                new_elem.ownerContractAddress = owner[0].node.owner.address
+                asset.owner = owner[0].node.owner.user ? owner[0].node.owner.user.username : null
+                asset.ownerContractAddress = owner[0].node.owner.address
             }
 
-            let lastSale = asset.assetEventData.lastSale
+            let lastSale = data.assetEventData.lastSale
             if (lastSale) {
-                new_elem.lastSale.symbol = lastSale.unitPriceQuantity.asset.symbol
+                asset.lastSale.symbol = lastSale.unitPriceQuantity.asset.symbol
                 let quantity = parseInt(lastSale.unitPriceQuantity.quantity)
-                new_elem.lastSale.quantity = quantity / (10 ** lastSale.unitPriceQuantity.asset.decimals)
+                asset.lastSale.quantity = quantity / (10 ** lastSale.unitPriceQuantity.asset.decimals)
+                asset.lastSale.usdSpotPrice = lastSale.unitPriceQuantity.asset.usdSpotPrice
             }
 
             // This query cannot obtain bestBid and bestAsk bidder name!
 
-            let bestBid = asset.orderData.bestBid
+            let bestBid = data.orderData.bestBid
             if (bestBid) {
-                new_elem.bestBid.orderType = bestBid.orderType
-                new_elem.bestBid.symbol = bestBid.paymentAssetQuantity.asset.symbol
+                asset.bestBid.orderType = bestBid.orderType
+                asset.bestBid.symbol = bestBid.paymentAssetQuantity.asset.symbol
                 let quantity = parseInt(bestBid.paymentAssetQuantity.quantity)
-                new_elem.bestBid.quantity = quantity / (10 ** bestBid.paymentAssetQuantity.asset.decimals) 
+                asset.bestBid.quantity = quantity / (10 ** bestBid.paymentAssetQuantity.asset.decimals) 
+                asset.bestBid.usdSpotPrice = bestBid.paymentAssetQuantity.asset.usdSpotPrice
             }
 
-            let bestAsk = asset.orderData.bestAsk
+            let bestAsk = data.orderData.bestAsk
             if (bestAsk) {
-                new_elem.bestAsk.orderType = bestAsk.orderType
-                new_elem.bestAsk.symbol = bestAsk.paymentAssetQuantity.asset.symbol
+                asset.bestAsk.orderType = bestAsk.orderType
+                asset.bestAsk.symbol = bestAsk.paymentAssetQuantity.asset.symbol
                 let quantity = parseInt(bestAsk.paymentAssetQuantity.quantity)
-                new_elem.bestAsk.quantity = quantity / (10 ** bestAsk.paymentAssetQuantity.asset.decimals)
+                asset.bestAsk.quantity = quantity / (10 ** bestAsk.paymentAssetQuantity.asset.decimals)
+                asset.bestAsk.usdSpotPrice = bestAsk.paymentAssetQuantity.asset.usdSpotPrice
             }
 
-            return new_elem
+            return asset
         })
 
         return output
@@ -236,11 +240,11 @@ class OpenSeaLib {
         }
 
         const data = json.data
-        let output = new ASSET_STRUCT()
+        let asset = new ASSET_STRUCT()
 
-        output.assetContractAddress = data.archetype.asset.assetContract.account.address
-        output.tokenId = parseInt(data.archetype.asset.tokenId)
-        output.name = data.archetype.asset.name
+        asset.assetContractAddress = data.archetype.asset.assetContract.account.address
+        asset.tokenId = parseInt(data.archetype.asset.tokenId)
+        asset.name = data.archetype.asset.name
         
         // TODO: HACKY
         // if (output.assetContractAddress.toUpperCase() === '0x31385d3520bced94f77aae104b406994d8f2168c'.toUpperCase()) {
@@ -250,36 +254,39 @@ class OpenSeaLib {
 
         let owner = data.archetype.asset.assetOwners.edges
         if (owner.length !== 0) {
-            output.owner = owner[0].node.owner.user ? owner[0].node.owner.user.username : null
-            output.ownerContractAddress = owner[0].node.owner.address
+            asset.owner = owner[0].node.owner.user ? owner[0].node.owner.user.username : null
+            asset.ownerContractAddress = owner[0].node.owner.address
         }
 
         let lastSale = data.archetype.asset.assetEventData.lastSale
         if (lastSale) {
-            output.lastSale.symbol = lastSale.unitPriceQuantity.asset.symbol
-            output.lastSale.quantity = parseInt(lastSale.unitPriceQuantity.quantity) / (10 ** lastSale.unitPriceQuantity.asset.decimals)
+            asset.lastSale.symbol = lastSale.unitPriceQuantity.asset.symbol
+            asset.lastSale.quantity = parseInt(lastSale.unitPriceQuantity.quantity) / (10 ** lastSale.unitPriceQuantity.asset.decimals)
+            asset.lastSale.usdSpotPrice = lastSale.unitPriceQuantity.asset.usdSpotPrice
         }
     
         let bestBid = data.tradeSummary.bestBid
         if (bestBid) {
-            output.bestBid.orderType = bestBid.orderType
-            output.bestBid.symbol = bestBid.makerAssetBundle.assetQuantities.edges[0].node.asset.symbol
-            output.bestBid.quantity = parseInt(bestBid.makerAssetBundle.assetQuantities.edges[0].node.quantity) / (10 ** bestBid.makerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
-            output.bestBid.username = bestBid.maker.user ? bestBid.maker.user.username : null
-            output.bestBid.userContractAddress = bestBid.maker.address
+            asset.bestBid.orderType = bestBid.orderType
+            asset.bestBid.symbol = bestBid.makerAssetBundle.assetQuantities.edges[0].node.asset.symbol
+            asset.bestBid.quantity = parseInt(bestBid.makerAssetBundle.assetQuantities.edges[0].node.quantity) / (10 ** bestBid.makerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
+            asset.bestBid.username = bestBid.maker.user ? bestBid.maker.user.username : null
+            asset.bestBid.userContractAddress = bestBid.maker.address
+            asset.bestBid.usdSpotPrice = bestBid.makerAssetBundle.assetQuantities.edges[0].node.asset.usdSpotPrice
         }
 
         let bestAsk = data.tradeSummary.bestAsk
         if (bestAsk) {
-            output.bestAsk.orderType = bestAsk.orderType
-            output.bestAsk.symbol = bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.symbol
-            output.bestAsk.username = bestAsk.maker.user ? bestAsk.maker.user.username : null
-            output.bestAsk.userContractAddress = bestAsk.maker.address
+            asset.bestAsk.orderType = bestAsk.orderType
+            asset.bestAsk.symbol = bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.symbol
+            asset.bestAsk.username = bestAsk.maker.user ? bestAsk.maker.user.username : null
+            asset.bestAsk.userContractAddress = bestAsk.maker.address
+            asset.bestAsk.usdSpotPrice = bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.usdSpotPrice
         
             let quantity = parseInt(bestAsk.takerAssetBundle.assetQuantities.edges[0].node.quantity)
         
             if (bestAsk.orderType !== 'DUTCH') {
-                output.bestAsk.quantity = quantity / (10 ** bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
+                asset.bestAsk.quantity = quantity / (10 ** bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
                 // WARNING -- ENGLISH AUCTIONS BESTASK IS NOT ACTUALLY BESTASK
                 // IF TYPE IS ENGLISH THEN CHECK BESTBID
             } else {
@@ -288,11 +295,11 @@ class OpenSeaLib {
                 let remainingDuration = Date.now() - Date.parse(bestAsk.closedAt)
                 let difference = quantity - parseInt(bestAsk.dutchAuctionFinalPrice)
                 let currentPrice = parseInt(bestAsk.dutchAuctionFinalPrice) + (difference * (remainingDuration / auctionDuration))
-                output.bestAsk.quantity = currentPrice / (10 ** bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
+                asset.bestAsk.quantity = currentPrice / (10 ** bestAsk.takerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
             }
         }
 
-        return output
+        return asset
     }
 }
 
