@@ -107,6 +107,7 @@ fragment AskBidModal_trade on TradeSummaryType {
             asset {
               decimals
               symbol
+              usdSpotPrice
             }
           }
         }
@@ -131,6 +132,8 @@ fragment AskBidModal_trade on TradeSummaryType {
             }
             asset {
               decimals
+              symbol
+              usdSpotPrice
               id
             }
             ...AssetQuantity_data

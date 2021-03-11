@@ -90,6 +90,7 @@ fragment BaseAsset on AssetType {
     name
     symbol
     decimals
+    usdSpotPrice
 }
 
 fragment BestOrders on ESOrderDataType {
