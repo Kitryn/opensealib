@@ -1,7 +1,7 @@
 const fetch = require('node-fetch')
 const winston = require('winston')
 const logger = winston.loggers.get('default')
-const { ASSET_STRUCT, ItemQuery, AssetSearchQuery, EventHistoryPollQuery, EventHistoryQuery } = require('./lib/structs')
+const { ASSET_STRUCT, ItemQuery, AssetSearchQuery, EventHistoryPollQuery, EventHistoryQuery, SymbolPriceQuery } = require('./lib/structs')
 
 const X_API_KEY = '0106d29713754b448f4513d7a66d0875'
 
@@ -12,6 +12,32 @@ class OpenSeaLib {
         this.nft_contract_address = address
         this.collection = collection
     }
+
+    static async fetch_symbol_usd_price(symbol) {
+        let query = new SymbolPriceQuery()
+        query.init(symbol)
+
+        let res = await fetch('https://api.opensea.io/graphql/', {
+            method: 'post',
+            body: JSON.stringify(query),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': X_API_KEY,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0',
+            }
+        })
+        .then(res => res.json())
+        .catch(err => {
+            logger.error(err)
+            return null
+        })
+
+        if (!res || !res.data || !res.data.paymentAsset || !res.data.paymentAsset.asset) {
+            logger.error(`Error fetching or parsing ${symbol}`)
+            return null
+        }
+        return res.data.paymentAsset.asset.usdSpotPrice
+    }    
 
     async fetch_single_asset(id) {
         let itemQuery = new ItemQuery()
