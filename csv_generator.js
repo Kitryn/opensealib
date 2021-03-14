@@ -10,6 +10,12 @@ const { OpenSeaLib } = require('./opensealib')
 const HASHMASK_ADDRESS = '0xc2c747e0f7004f9e8817db2ca4997657a7746928'
 // Waifu add 
 const WAIFU_ADDRESS = '0x2216d47494E516d8206B70FCa8585820eD3C4946'
+// bgan add and slug
+
+// bastard gan punk v2 add
+// bastard-gan-punks-v2
+const GAN_V2_ADDRESS = '0x31385d3520bced94f77aae104b406994d8f2168c'
+const TOTAL_GANS = 8611  // will need updating regularly https://etherscan.io/address/0x31385d3520bced94f77aae104b406994d8f2168c#readContract
 
 async function generate_hashmask_csv() {
     let opensealib = new OpenSeaLib(HASHMASK_ADDRESS, 'hashmasks')
@@ -42,22 +48,45 @@ async function generate_hashmask_csv() {
     return await jsonexport(output)
 }
 
-async function generate_waifu_csv() {
-    let opensealib = new OpenSeaLib(WAIFU_ADDRESS, 'waifusion')
-    let waifudata = await opensealib.fetch_from_range()
+async function generate_gan_v2_csv() {
+    const opensealib = new OpenSeaLib(GAN_V2_ADDRESS, 'bastard-gan-punks-v2')
+    const batch_size = 100
 
+    let count = 0
     let output = []
+    for (let i = 0; i < TOTAL_GANS; i += batch_size) {
+        let promises = []
+        let end_id = Math.min(TOTAL_GANS, i + batch_size)
+        for (let k = i; k < end_id; k++) {
+            promises.push(opensealib.fetch_single_asset(k))           
+            count += 1
+        }
+        let res = await Promise.all(promises)
 
-    for (let waifu of waifudata) {
-        let out = { ...waifu }
-        delete out.assetContractAddress
-        output.push(out)
+        for (let asset of res) {
+            asset.traits = asset.traits.map(elem => {
+                let out = {
+                    traitType: elem.node.traitType,
+                    value: elem.node.value
+                }
+                return out
+            })
+
+            for (let trait of asset.traits) {
+                let traitKey = trait.traitType
+                asset[traitKey] = trait.value
+            }
+
+            delete asset.traits
+            delete asset.assetContractAddress
+
+            let out = { ...asset }
+            output.push(out)
+        }
     }
-
     return await jsonexport(output)
 }
 
-
 module.exports = {
-    generate_hashmask_csv, generate_waifu_csv
+    generate_hashmask_csv, generate_gan_v2_csv
 }
