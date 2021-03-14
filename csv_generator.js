@@ -83,6 +83,7 @@ async function generate_gan_v2_csv() {
             let out = { ...asset }
             output.push(out)
         }
+        logger.info(`${output.length} / ${TOTAL_GANS}`)
     }
     return await jsonexport(output)
 }
