@@ -50,7 +50,7 @@ async function generate_hashmask_csv() {
 
 async function generate_gan_v2_csv() {
     const opensealib = new OpenSeaLib(GAN_V2_ADDRESS, 'bastard-gan-punks-v2')
-    const batch_size = 100
+    const batch_size = 500
 
     let count = 0
     let output = []
