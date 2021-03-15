@@ -167,7 +167,7 @@ class OpenSeaLib {
 
     _parse_recent_bids(json) {
         if (!json || !json.data || !json.data.assetEvents || !json.data.assetEvents.edges) {
-            logger.error("Invalid response!")
+            logger.error("Invalid response in _parse_recent_bids!!")
             logger.error(json)
             return []
         }
@@ -206,7 +206,7 @@ class OpenSeaLib {
 
     _parse_range_query_response(json) {
         if (!json) {
-            logger.error("Invalid response!")
+            logger.error("Invalid response in _parse_range_query_response!")
             logger.error(json)
             return []
         }
@@ -263,7 +263,7 @@ class OpenSeaLib {
 
     _parse_item_query(json) {
         if (!json || !json.data) {
-            logger.error("Invalid response!")
+            logger.error("Invalid response in _parse_item_query!")
             logger.error(json)
             return null
         }
