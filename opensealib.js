@@ -180,27 +180,42 @@ class OpenSeaLib {
             }
         }
 
-        let output = json.data.assetEvents.edges.map(elem => {
-            let asset = new ASSET_STRUCT()
-            let node = elem.node            
+        let output = json.data.assetEvents.edges.flatMap(elem => {
+            try {
+                let asset = new ASSET_STRUCT()
+                let node = elem.node            
+    
+                asset.assetContractAddress = node.assetQuantity.asset.assetContract.account.address
+                asset.tokenId = parseInt(node.assetQuantity.asset.tokenId)
+                // asset.owner = NOT IMPLEMENTED YET
+                // asset.ownerContractAddress NOT IMPLEMENTED
+                asset.name = node.assetQuantity.asset.name
+    
+                asset.bestBid.orderType = 'BASIC'
+                asset.bestBid.symbol = node.price.asset.symbol
+                asset.bestBid.usdSpotPrice = node.price.asset.usdSpotPrice
+                let quantity = parseInt(node.price.quantity)
+                asset.bestBid.quantity = quantity / (10 ** node.price.asset.decimals)
+                asset.bestBid.username = node.fromAccount.user ? node.fromAccount.user.username : null
+                asset.bestBid.userContractAddress = node.fromAccount.address
 
-            asset.assetContractAddress = node.assetQuantity.asset.assetContract.account.address
-            asset.tokenId = parseInt(node.assetQuantity.asset.tokenId)
-            // asset.owner = NOT IMPLEMENTED YET
-            // asset.ownerContractAddress NOT IMPLEMENTED
-            asset.name = node.assetQuantity.asset.name
-
-            asset.bestBid.orderType = 'BASIC'
-            asset.bestBid.symbol = node.price.asset.symbol
-            asset.bestBid.usdSpotPrice = node.price.asset.usdSpotPrice
-            let quantity = parseInt(node.price.quantity)
-            asset.bestBid.quantity = quantity / (10 ** node.price.asset.decimals)
-            asset.bestBid.username = node.fromAccount.user ? node.fromAccount.user.username : null
-            asset.bestBid.userContractAddress = node.fromAccount.address
-
-            return asset
+                return [asset]
+            } catch (error) {
+                logger.error('Error parsing elem from response from _parse_recent_bids!')
+                logger.error('elem: ')
+                logger.error(JSON.stringify(elem))
+                logger.error('full json response:')
+                logger.error(JSON.stringify(json))
+                logger.error(error)
+                return []
+            }            
         })
-
+        let expected_bid_length = json.data.assetEvents.edges.length
+        logger.verbose(`${this.collection}: parsed ${output.length} of expected ${expected_bid_length}`)
+        if (expected_bid_length !== output.length) {
+            logger.warn(`Num parsed != num returned by api response! API response below:`)
+            logger.warn(JSON.stringify(json))
+        }
         return output
     }
 
