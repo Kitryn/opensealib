@@ -291,9 +291,12 @@ class OpenSeaLib {
         asset.name = data.archetype.asset.name
         
         // TODO: HACKY
-        if (asset.assetContractAddress.toUpperCase() === '0x31385d3520bced94f77aae104b406994d8f2168c'.toUpperCase()) {
             // bastardganpunkv2
-            asset.traits = data.archetype.asset.traits.edges
+        try{
+            asset.traits = data.archetype.asset.traits.edges   
+        } catch (error) {
+            logger.warn(`opensealib:${this.collection}: unable to load asset traits for item ${asset.assetContractAddress}:${asset.tokenId}`)
+            logger.debug(json)
         }
 
         let owner = data.archetype.asset.assetOwners.edges
