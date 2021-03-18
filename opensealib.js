@@ -59,7 +59,7 @@ class OpenSeaLib {
             return null
         })
 
-        return this._parse_item_query(res)
+        return this._parse_item_query(res, id)
     }
     
     async fetch_from_range(start = 0, end = 16383) {
@@ -276,9 +276,9 @@ class OpenSeaLib {
         return output
     }
 
-    _parse_item_query(json) {
+    _parse_item_query(json, id) {
         if (!json || !json.data) {
-            logger.error("Invalid response in _parse_item_query!")
+            logger.error(`Invalid response in _parse_item_query! Id: ${id}`)
             logger.error(json)
             return null
         }
@@ -286,9 +286,15 @@ class OpenSeaLib {
         const data = json.data
         let asset = new ASSET_STRUCT()
 
-        asset.assetContractAddress = data.archetype.asset.assetContract.account.address
-        asset.tokenId = parseInt(data.archetype.asset.tokenId)
-        asset.name = data.archetype.asset.name
+        try {
+            asset.assetContractAddress = data.archetype.asset.assetContract.account.address
+            asset.tokenId = parseInt(data.archetype.asset.tokenId)
+            asset.name = data.archetype.asset.name        
+        } catch (error) {
+            logger.warn(`Invalid response, unable to parse asset! Skipping! Id: ${id}`)
+            logger.warn(json)
+            return null
+        }
         
         // TODO: HACKY
             // bastardganpunkv2
