@@ -15,7 +15,7 @@ const WAIFU_ADDRESS = '0x2216d47494E516d8206B70FCa8585820eD3C4946'
 // mooncat add
 const MOONCAT_ADDRESS = '0x7c40c393dc0f283f318791d746d894ddd3693572'
 // slug wrapped-mooncatsrescue
-const TOTAL_CATS = 8054 // will need updating regularly -- this is lastindex+1
+const TOTAL_CATS = 8101 // will need updating regularly -- this is lastindex+1
 
 // bastard gan punk v2 add
 // bastard-gan-punks-v2

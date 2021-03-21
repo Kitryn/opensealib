@@ -13,6 +13,31 @@ class OpenSeaLib {
         this.collection = collection
     }
 
+    async fetch_latest_minted() {
+        let query = new AssetSearchQuery()
+        query.init(this.collection, 0,0)
+        query.variables.count = 1
+        query.variables.numericTraits = null
+
+        let res = await fetch('https://api.opensea.io/graphql/', {
+            method: 'post',
+            body: JSON.stringify(query),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-KEY': X_API_KEY,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0',
+            }
+        })
+        .then(res => res.json())
+        .catch(err => {
+            logger.error(`Error fetching recently minted of collection ${this.collection}`)
+            logger.error(err)
+            return null
+        })
+
+        return this._parse_range_query_response(res.data.query.search.edges)
+    }
+
     static async fetch_symbol_usd_price(symbol) {
         let query = new SymbolPriceQuery()
         query.init(symbol)
