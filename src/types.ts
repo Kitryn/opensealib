@@ -1,13 +1,13 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-const _assetSearchQueryString: string = fs.readFileSync(path.resolve(__dirname, './gql/CustomAssetSearch.gql'), 'utf8')
-const _itemQueryString: string = fs.readFileSync(path.resolve(__dirname, './gql/CustomItemQuery.gql'), 'utf8')
-const _eventHistoryQueryString: string = fs.readFileSync(path.resolve(__dirname, './gql/CustomEventHistoryQuery.gql'), 'utf8')
-const _eventHistoryPollQueryString: string = fs.readFileSync(path.resolve(__dirname, './gql/CustomEventHistoryPollQuery.gql'), 'utf8')
+const _assetSearchQuery: string = fs.readFileSync(path.resolve(__dirname, './gql/CustomAssetSearch.gql'), 'utf8')
+const _itemQuery: string = fs.readFileSync(path.resolve(__dirname, './gql/CustomItemQuery.gql'), 'utf8')
+const _eventHistoryQuery: string = fs.readFileSync(path.resolve(__dirname, './gql/CustomEventHistoryQuery.gql'), 'utf8')
+const _eventHistoryPollQuery: string = fs.readFileSync(path.resolve(__dirname, './gql/CustomEventHistoryPollQuery.gql'), 'utf8')
 const _symbolPriceQuery: string = fs.readFileSync(path.resolve(__dirname, './gql/CustomPriceQuery.gql'), 'utf8')
 
-interface tokenIdTrait {
+interface TokenIdTrait {
     name: string
     ranges: Array<{
         min: number,
@@ -15,16 +15,16 @@ interface tokenIdTrait {
     }>
 }
 
-interface archetypeType {
+interface ArchetypeType {
     assetContractAddress: string
     tokenId: number
 }
 
-interface itemQueryVariables {
-    archetype: archetypeType
+interface ItemQueryVariables {
+    archetype: ArchetypeType
 }
 
-interface symbolVariables {
+interface SymbolVariables {
     symbol: string
 }
 
@@ -53,15 +53,15 @@ export class AssetSearchQuery extends Query {
         resultModel: 'ASSETS',
         cursor: null,
         sortBy: 'BIRTH_DATE',
-        numericTraits: new Array<tokenIdTrait>()
+        numericTraits: new Array<TokenIdTrait>()
     }
 
     constructor(collection: CollectionSlug, start?: number, end?: number) {
-        super(_assetSearchQueryString)
+        super(_assetSearchQuery)
         
         this.variables.collections.push(collection)
         if (start != null && end != null) {
-            let numericTrait: tokenIdTrait = {
+            let numericTrait: TokenIdTrait = {
                 name: 'Token ID',
                 ranges: [
                     {
@@ -78,11 +78,11 @@ export class AssetSearchQuery extends Query {
 
 export class ItemQuery extends Query {
     id = 'itemQuery'
-    variables: itemQueryVariables
+    variables: ItemQueryVariables
 
     constructor(address: string, id: number) {
-        super(_itemQueryString)
-        const archetype: archetypeType = {
+        super(_itemQuery)
+        const archetype: ArchetypeType = {
             assetContractAddress: address,
             tokenId: id
         }
@@ -105,7 +105,7 @@ export class EventHistoryQuery extends Query {
     }
 
     constructor(collection: CollectionSlug) {
-        super(_eventHistoryQueryString)
+        super(_eventHistoryQuery)
         this.variables.collections.push(collection)
     }
 }
@@ -125,7 +125,7 @@ export class EventHistoryPollQuery extends Query {
     }
 
     constructor(collection: CollectionSlug, timestamp: string = (new Date(Date.now() - 11*1000)).toISOString()) {
-        super(_eventHistoryPollQueryString)
+        super(_eventHistoryPollQuery)
         this.variables.collections.push(collection)
         this.variables.eventTimestamp_Gt = timestamp
     }
@@ -133,7 +133,7 @@ export class EventHistoryPollQuery extends Query {
 
 export class SymbolPriceQuery extends Query {
     id = 'priceQuery'
-    variables: symbolVariables
+    variables: SymbolVariables
 
     constructor(symbol:string) {
         super(_symbolPriceQuery)
@@ -146,27 +146,27 @@ export class SymbolPriceQuery extends Query {
 // --------------
 
 export interface LastSale {
-    symbol: string | null
-    quantity: string | null
-    usdSpotPrice: number | null
+    symbol: string
+    quantity: number
+    usdSpotPrice: number
 }
 
 export interface Order {
-    orderType: string | null
-    symbol: string | null
-    quantity: number | null
-    username: string | null
-    userContractAddress: string | null
-    usdSpotPrice: number | null
+    orderType: string
+    symbol: string
+    quantity: number
+    usdSpotPrice: number
+    username?: string
+    userContractAddress?: string
 }
 
 export interface Asset {
     assetContractAddress: string
     tokenId: number
-    owner: string | null
-    ownerContractAddress: string | null
-    name: string | null
-    lastSale: LastSale
-    bestBid: Order
-    bestAsk: Order
+    name: string
+    owner?: string
+    ownerContractAddress?: string
+    lastSale?: LastSale
+    bestBid?: Order
+    bestAsk?: Order
 }
