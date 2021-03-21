@@ -36,7 +36,7 @@ export enum CollectionSlug {
     chubbies = 'chubbies'
 }
 
-class Query {
+export class Query {
     query: string
     variables = {}
 

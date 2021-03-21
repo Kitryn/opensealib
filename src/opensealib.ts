@@ -4,7 +4,7 @@ import * as winston from 'winston'
 const parentLogger = winston.loggers.get('default')
 const moduleLogger = parentLogger.child({module: 'opensealib'})
 
-import { CollectionSlug, AssetSearchQuery, ItemQuery, EventHistoryPollQuery, SymbolPriceQuery, LastSale, Order, Asset } from './types'
+import { CollectionSlug, AssetSearchQuery, Query, ItemQuery, EventHistoryPollQuery, SymbolPriceQuery, LastSale, Order, Asset } from './types'
 
 const GRAPHQL_URL = 'https://api.opensea.io/graphql/'
 
@@ -26,6 +26,22 @@ export class OpenSeaLib {
             'X-API-KEY': this.xApiKey,
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:86.0) Gecko/20100101 Firefox/86.0',
         }
+    }
+
+    private async _postApi(query: Query): Promise<any | null> {
+        let res = await fetch(GRAPHQL_URL, {
+            method: 'post',
+            body: JSON.stringify(query),
+            headers: this._defaultHeaders
+        })
+        .then((res: Response) => res.json())
+        .catch((err: any) => {
+            this.logger.error('POST Api error', {error: err})
+            return undefined
+        })
+
+        if (res) return res
+        return null  // future error handling goes here
     }
 
     private _parseRangeQueryResponse(json: Array<any>): Asset[] {
@@ -97,17 +113,7 @@ export class OpenSeaLib {
         let query = new AssetSearchQuery(this.collection)
         query.variables.count = 1
 
-        let res = await fetch(GRAPHQL_URL, {
-            method: 'post',
-            body: JSON.stringify(query),
-            headers: this._defaultHeaders
-        })
-        .then((res: Response) => res.json())
-        .catch((err: any) => {
-            this.logger.error(`Error fetching recently minted`)
-            this.logger.error(err)
-            return undefined  // TODO: ERROR HANDLING! what kind of error was it?
-        })
+        let res = await this._postApi(query)
 
         if (res == null) return null
         let edges: []
