@@ -36,7 +36,7 @@ export class OpenSeaLib {
         })
         .then((res: Response) => res.json())
         .catch((err: any) => {
-            this.logger.error('POST Api error', {error: err})
+            this.logger.error('POST Api error', {error: err, query: query})
             return undefined
         })
 
@@ -100,8 +100,7 @@ export class OpenSeaLib {
                 output.push(asset)
             } catch (err) {
                 // parsing of elem failed
-                this.logger.error(`Error parsing element in range query response`, {elem: elem})
-                this.logger.error(err)
+                this.logger.error(`Error parsing element in range query response`, {elem: elem, error: err})
                 continue
             }
         }
@@ -121,13 +120,27 @@ export class OpenSeaLib {
         try {
             edges = res.data.query.search.edges
         } catch (err) {
-            this.logger.error(`Malformed response in fetchLatestMinted`, {response: res})
+            this.logger.error(`Malformed response in fetchLatestMinted`, {response: res, error: err})
             return null
         }
 
         let output: Asset = this._parseRangeQueryResponse(edges)[0]
 
         if (output != null) return output
+        return null
+    }
+
+    async fetchSymbolUsdPrice(symbol: string): Promise<number | null> {
+        let query = new SymbolPriceQuery(symbol)
+
+        let res = await this._postApi(query)
+        if (res == null) return null  // probably needs better error management
+        
+        try {
+            return res.data.paymentAsset.asset.usdSpotPrice
+        } catch (err) {
+            this.logger.error(`Error fetching or parsing ${symbol}`, {error: err, response: res})
+        }
         return null
     }
 }
