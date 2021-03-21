@@ -1,0 +1,17 @@
+query priceQuery (
+    $symbol: String
+) {
+    ...payment
+}
+
+fragment payment on Query {
+    paymentAsset (symbol: $symbol) {
+        asset {
+            name
+            relayId
+            symbol
+            decimals
+            usdSpotPrice
+        }
+    }
+}

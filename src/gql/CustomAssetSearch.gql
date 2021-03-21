@@ -1,0 +1,117 @@
+query AssetSearchQuery(
+  $collections: [CollectionSlug!]
+  $count: Int
+  $resultModel: SearchResultModel
+  $cursor: String
+  $sortBy: SearchSortBy
+  $numericTraits: [TraitRangeType!]
+) {
+    query {
+        ...AssetSearch
+    }
+}
+
+fragment AssetSearch on Query {
+    search(after: $cursor, collections: $collections, first: $count, resultType: $resultModel, sortBy: $sortBy, numericTraits: $numericTraits) {
+        edges {
+            node {
+                ...AssetRes
+            }
+            cursor
+        }
+        pageInfo {
+            endCursor
+            hasNextPage
+        }
+        totalCount
+    }
+}
+
+fragment AssetRes on SearchResultType {
+    asset {
+        name
+        description
+        assetContract {
+            ...AssetContr
+        }
+        assetOwners(first: 1) {
+            edges {
+                node {
+                    ...AssetOwn
+                }
+            }
+        }
+        assetEventData {
+            lastSale {
+                eventType
+                unitPriceQuantity {
+                    asset {
+                        ...BaseAsset
+                    }
+                    quantity
+                }
+            }
+        }
+        orderData {
+            ...BestOrders
+        }
+        tokenId
+        traits (first: 100) {
+            edges {
+                node {
+                    traitType
+                    value
+                    traitCount
+                    displayType
+                    intValue
+                }
+            }
+        }
+    }
+}
+
+fragment AssetContr on AssetContractType {
+    name
+    account {
+        address
+    }
+} 
+
+fragment AssetOwn on AssetOwnershipType {
+    owner {
+        address
+        user {
+            username
+        }
+    }
+}
+
+fragment BaseAsset on AssetType {
+    name
+    symbol
+    decimals
+    usdSpotPrice
+}
+
+fragment BestOrders on ESOrderDataType {
+    bestAsk {
+        ...OrderFields
+    }
+    bestBid {
+        ...OrderFields
+    }
+}
+
+fragment OrderFields on ESOrderType {
+    closedAt
+    openedAt
+    orderType
+    paymentAssetQuantity {
+        asset {
+            ...BaseAsset
+        }
+        quantity
+    }
+    dutchAuctionFinalPrice
+    priceFnEndedAt
+}
