@@ -36,6 +36,14 @@ export enum CollectionSlug {
     chubbies = 'chubbies'
 }
 
+export enum NFTContractAddress {
+    hashmasks = '0xc2c747e0f7004f9e8817db2ca4997657a7746928',
+    mooncats = '0x7c40c393dc0f283f318791d746d894ddd3693572',
+    gan_v2 = '0x31385d3520bced94f77aae104b406994d8f2168c',
+    waifusion = '0x2216d47494E516d8206B70FCa8585820eD3C4946',
+    chubbies = '0x1db61fc42a843bad4d91a2d788789ea4055b8613'
+}
+
 export class Query {
     query: string
     variables = {}
@@ -169,5 +177,12 @@ export interface Asset {
     lastSale?: LastSale
     bestBid?: Order
     bestAsk?: Order
-    traits?: any
+    traits?: Trait[]
+}
+
+// -----------------
+
+export interface Trait {
+    traitType: string
+    value: string
 }

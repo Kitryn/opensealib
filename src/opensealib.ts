@@ -4,7 +4,7 @@ import * as winston from 'winston'
 const parentLogger = winston.loggers.get('default')
 const moduleLogger = parentLogger.child({module: 'opensealib'})
 
-import { CollectionSlug, AssetSearchQuery, Query, ItemQuery, EventHistoryPollQuery, SymbolPriceQuery, LastSale, Order, Asset } from './types'
+import { CollectionSlug, AssetSearchQuery, Query, ItemQuery, EventHistoryPollQuery, SymbolPriceQuery, LastSale, Order, Asset, Trait } from './types'
 
 const GRAPHQL_URL = 'https://api.opensea.io/graphql/'
 
@@ -118,12 +118,18 @@ export class OpenSeaLib {
                 name: data.archetype.asset.name
             }
             
-            // TODO: hacky
-            try {
-                asset.traits = data.archetype.asset.traits.edges
-            } catch (err) {
-                this.logger.warn(`Unable to load trait data`, {data: data})
+
+            let traitListData: Array<any> = data?.archetype?.asset?.traits?.edges ?? []
+            let traitList = new Array<Trait>()
+            for (let trait of traitListData) {
+                const node = trait.node
+                const value = node.value || node.intValue || node.floatValue || node.dateValue
+                traitList.push({
+                    traitType: node.traitType,
+                    value: value
+                })
             }
+            if (traitList.length > 0) asset.traits = traitList
 
             const owner = data.archetype.asset.assetOwners.edges
             if (owner.length !== 0) {
