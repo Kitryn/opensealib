@@ -169,4 +169,5 @@ export interface Asset {
     lastSale?: LastSale
     bestBid?: Order
     bestAsk?: Order
+    traits?: any
 }

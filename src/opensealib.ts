@@ -108,6 +108,84 @@ export class OpenSeaLib {
         return output
     }
 
+    private _parseSingleAssetResponse(data: any): Asset | null {
+        let asset: Asset
+        try {
+            asset = {
+                assetContractAddress: data.archetype.asset.assetContract.account.address,
+                tokenId: parseInt(data.archetype.asset.tokenId),
+                name: data.archetype.asset.name
+            }
+            
+            // TODO: hacky
+            try {
+                asset.traits = data.archetype.asset.traits.edges
+            } catch (err) {
+                this.logger.warn(`Unable to load trait data`, {data: data})
+            }
+
+            const owner = data.archetype.asset.assetOwners.edges
+            if (owner.length !== 0) {
+                asset.owner = owner[0].node.owner.user ? owner[0].node.owner.user.username : undefined
+                asset.ownerContractAddress = owner[0].node.owner.address
+            }
+
+            const lastSaleData = data.archetype.asset.assetEventData.lastSale
+            if (lastSaleData) {
+                const lastSale: LastSale = {
+                    symbol: lastSaleData.unitPriceQuantity.asset.symbol,
+                    quantity: parseInt(lastSaleData.unitPriceQuantity.quantity) / (10 ** lastSaleData.unitPriceQuantity.asset.decimals),
+                    usdSpotPrice: lastSaleData.unitPriceQuantity.asset.usdSpotPrice
+                }
+                asset.lastSale = lastSale
+            }
+
+            const bestBidData = data.tradeSummary.bestBid
+            if (bestBidData) {
+                const bestBid: Order = {
+                    orderType: bestBidData.orderType,
+                    symbol: bestBidData.makerAssetBundle.assetQuantities.edges[0].node.asset.symbol,
+                    quantity: parseInt(bestBidData.makerAssetBundle.assetQuantities.edges[0].node.quantity) / (10 ** bestBidData.makerAssetBundle.assetQuantities.edges[0].node.asset.decimals),
+                    usdSpotPrice: bestBidData.makerAssetBundle.assetQuantities.edges[0].node.asset.usdSpotPrice,
+                    username: bestBidData.maker.user ? bestBidData.maker.user.username : undefined,
+                    userContractAddress: bestBidData.maker.address
+                }
+                asset.bestBid = bestBid
+            }
+
+            const bestAskData = data.tradeSummary.bestAsk
+            if (bestAskData) {
+                let bestAsk: Order = {
+                    orderType: bestAskData.orderType,
+                    symbol: bestAskData.takerAssetBundle.assetQuantities.edges[0].node.asset.symbol,
+                    usdSpotPrice: bestAskData.takerAssetBundle.assetQuantities.edges[0].node.asset.usdSpotPrice,
+                    username: bestAskData.maker.user ? bestAskData.maker.user.username : undefined,
+                    userContractAddress: bestAskData.maker.address,
+                    quantity: parseInt(bestAskData.takerAssetBundle.assetQuantities.edges[0].node.quantity) / (10 ** bestAskData.takerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
+                }
+                // WARNING: ENGLISH AUCTIONS SOMETIMES SAY BASIC INSTEAD OF ENGLISH
+                // ALSO IF ITS ENGLISH -- BEST ASK IS NOT ACTUALLY BEST ASK, CHECK BEST BID
+
+                if (bestAskData.orderType === 'DUTCH') {
+                    // WARNING -- DUTCH AUCTION PRICES ARE ESTIMATED!!
+                    let auctionDuration = Date.parse(bestAskData.openedAt) - Date.parse(bestAskData.closedAt)
+                    let remainingDuration = Date.now() - Date.parse(bestAskData.closedAt)
+                    let quantity = parseInt(bestAskData.takerAssetBundle.assetQuantities.edges[0].node.quantity)
+                    let difference = quantity - parseInt(bestAskData.dutchAuctionFinalPrice)
+                    let currentPrice = parseInt(bestAskData.dutchAuctionFinalPrice) + (difference * (remainingDuration / auctionDuration))
+                    bestAsk.quantity = currentPrice / (10 ** bestAskData.takerAssetBundle.assetQuantities.edges[0].asset.decimals)
+                }
+
+                asset.bestAsk = bestAsk
+            }
+
+            return asset
+        } catch (err) {
+            this.logger.error(`Error parsing singleAssetResponse!`, {error: err, data: data})
+            return null
+        }
+    }
+
     async fetchLatestMinted(): Promise<Asset | null> {
         let query = new AssetSearchQuery(this.collection)
         query.variables.count = 1
@@ -119,6 +197,7 @@ export class OpenSeaLib {
 
         try {
             edges = res.data.query.search.edges
+            if (edges == null) throw new Error('edge array not present in response')
         } catch (err) {
             this.logger.error(`Malformed response in fetchLatestMinted`, {response: res, error: err})
             return null
@@ -142,5 +221,28 @@ export class OpenSeaLib {
             this.logger.error(`Error fetching or parsing ${symbol}`, {error: err, response: res})
         }
         return null
+    }
+
+    async fetchSingleAsset(id: number): Promise<Asset | null> {
+        let query = new ItemQuery(this.nftContractAddress, id)
+
+        let res = await this._postApi(query)
+        if (res == null) return null  // probably needs better error management
+
+        let data: Object
+        try {
+            data = res.data
+            if (data == null) throw new Error('data not present in response')
+        } catch (err) {
+            this.logger.error(`Malformed response in fetchSingleAsset id ${id}`, {response: res, error: err})
+            return null
+        }
+
+        const parsed = this._parseSingleAssetResponse(data)
+        if (parsed == null) {
+            this.logger.error(`Error parsing data in fetchSingleAsset id ${id}`, {data: data})
+            return null
+        }
+        return parsed
     }
 }
