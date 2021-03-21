@@ -1,0 +1,297 @@
+query OrdersQuery(
+  $cursor: String
+  $count: Int = 10
+  $excludeMaker: IdentityInputType
+  $isExpired: Boolean
+  $isFilled: Boolean
+  $isValid: Boolean
+  $maker: IdentityInputType
+  $makerArchetype: ArchetypeInputType
+  $makerAssetIsPayment: Boolean
+  $takerArchetype: ArchetypeInputType
+  $takerAssetCategories: [CollectionSlug!]
+  $takerAssetCollections: [CollectionSlug!]
+  $takerAssetIsOwnedBy: IdentityInputType
+  $takerAssetIsPayment: Boolean
+  $sortAscending: Boolean
+  $sortBy: OrderSortOption
+  $makerAssetBundle: BundleSlug
+  $takerAssetBundle: BundleSlug
+) {
+  ...Orders_data_2g7x2d
+}
+
+fragment AccountLink_data on AccountType {
+  address
+  chain {
+    identifier
+    id
+  }
+  user {
+    username
+    id
+  }
+  ...ProfileImage_data
+  ...wallet_accountKey
+}
+
+fragment AskPrice_data on OrderV2Type {
+  dutchAuctionFinalPrice
+  openedAt
+  priceFnEndedAt
+  makerAssetBundle {
+    assetQuantities(first: 1) {
+      edges {
+        node {
+          ...quantity_data
+          id
+        }
+      }
+    }
+    id
+  }
+  takerAssetBundle {
+    assetQuantities(first: 1) {
+      edges {
+        node {
+          ...AssetQuantity_data
+          id
+        }
+      }
+    }
+    id
+  }
+}
+
+fragment AssetCell_assetBundle on AssetBundleType {
+  assetQuantities(first: 2) {
+    edges {
+      node {
+        asset {
+          collection {
+            name
+            id
+          }
+          name
+          ...AssetMedia_asset
+          ...asset_url
+          id
+        }
+        relayId
+        id
+      }
+    }
+  }
+  name
+  slug
+}
+
+fragment AssetMedia_asset on AssetType {
+  animationUrl
+  backgroundColor
+  collection {
+    description
+    displayData {
+      cardDisplayStyle
+    }
+    imageUrl
+    hidden
+    name
+    slug
+    id
+  }
+  description
+  name
+  tokenId
+  imageUrl
+}
+
+fragment AssetQuantity_data on AssetQuantityType {
+  asset {
+    ...Price_data
+    id
+  }
+  quantity
+}
+
+fragment Orders_data_2g7x2d on Query {
+  orders(after: $cursor, excludeMaker: $excludeMaker, first: $count, isExpired: $isExpired, isFilled: $isFilled, isValid: $isValid, maker: $maker, makerArchetype: $makerArchetype, makerAssetIsPayment: $makerAssetIsPayment, takerArchetype: $takerArchetype, takerAssetCategories: $takerAssetCategories, takerAssetCollections: $takerAssetCollections, takerAssetIsOwnedBy: $takerAssetIsOwnedBy, takerAssetIsPayment: $takerAssetIsPayment, sortAscending: $sortAscending, sortBy: $sortBy, makerAssetBundle: $makerAssetBundle, takerAssetBundle: $takerAssetBundle) {
+    edges {
+      node {
+        closedAt
+        isFulfillable
+        isValid
+        oldOrder
+        openedAt
+        orderType
+        maker {
+          address
+          ...AccountLink_data
+          ...wallet_accountKey
+          id
+        }
+        makerAsset: makerAssetBundle {
+          assetQuantities(first: 1) {
+            edges {
+              node {
+                asset {
+                  assetContract {
+                    account {
+                      address
+                      chain {
+                        identifier
+                        id
+                      }
+                      id
+                    }
+                    id
+                  }
+                  id
+                }
+                id
+              }
+            }
+          }
+          id
+        }
+        makerAssetBundle {
+          assetQuantities(first: 1) {
+            edges {
+              node {
+                ...AssetQuantity_data
+                ...quantity_data
+                id
+              }
+            }
+          }
+          id
+        }
+        relayId
+        side
+        taker {
+          ...AccountLink_data
+          ...wallet_accountKey
+          id
+          address
+        }
+        takerAssetBundle {
+          assetQuantities(first: 1) {
+            edges {
+              node {
+                ...AssetQuantity_data
+                ...quantity_data
+                asset {
+                  ownedQuantity(identity: {})
+                  decimals
+                  symbol
+                  relayId
+                  assetContract {
+                    account {
+                      address
+                      id
+                    }
+                    id
+                  }
+                  id
+                }
+                quantity
+                id
+              }
+            }
+          }
+          id
+        }
+        ...AskPrice_data
+        ...orderLink_data
+        makerAssetBundleDisplay: makerAssetBundle {
+          ...AssetCell_assetBundle
+          id
+        }
+        takerAssetBundleDisplay: takerAssetBundle {
+          ...AssetCell_assetBundle
+          id
+        }
+        id
+        __typename
+      }
+      cursor
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+}
+
+fragment Price_data on AssetType {
+  decimals
+  imageUrl
+  symbol
+  usdSpotPrice
+  assetContract {
+    blockExplorerLink
+    id
+  }
+}
+
+fragment ProfileImage_data on AccountType {
+  imageUrl
+  address
+  chain {
+    identifier
+    id
+  }
+}
+
+fragment asset_url on AssetType {
+  assetContract {
+    account {
+      address
+      chain {
+        identifier
+        id
+      }
+      id
+    }
+    id
+  }
+  tokenId
+}
+
+fragment orderLink_data on OrderV2Type {
+  makerAssetBundle {
+    assetQuantities(first: 1) {
+      edges {
+        node {
+          asset {
+            externalLink
+            collection {
+              externalUrl
+              id
+            }
+            id
+          }
+          id
+        }
+      }
+    }
+    id
+  }
+}
+
+fragment quantity_data on AssetQuantityType {
+  asset {
+    decimals
+    id
+  }
+  quantity
+}
+
+fragment wallet_accountKey on AccountType {
+  address
+  chain {
+    identifier
+    id
+  }
+}
+
