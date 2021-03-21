@@ -44,9 +44,10 @@ export class OpenSeaLib {
         return null  // future error handling goes here
     }
 
-    private _parseRangeQueryResponse(json: Array<any>): Asset[] {
+    private _parseRangeQueryResponse(edges: Array<any>): Asset[] {
         let output = new Array<Asset>()
-        for (let elem of json) {
+        // if input is [], returns []
+        for (let elem of edges) {
             try {
                 // Try to parse elem and push to output
                 const data = elem.node.asset
@@ -186,55 +187,72 @@ export class OpenSeaLib {
         }
     }
 
+    private _parseRecentBidsResponse(edges: Array<any>): Asset[] {
+        let output: Asset[] = new Array<Asset>()
+        for (let edge of edges) {
+            try {
+                const node = edge.node
+                let asset: Asset = {
+                    assetContractAddress: node.assetQuantity.asset.assetContract.account.address,
+                    tokenId: parseInt(node.assetQuantity.asset.tokenId),
+                    name: node.assetQuantity.asset.name
+                }  // unable to get owner and ownercontractaddress right now...
+
+                let bestBid: Order = {
+                    orderType: 'BASIC',
+                    symbol: node.price.asset.symbol,
+                    usdSpotPrice: node.price.asset.usdSpotPrice,
+                    quantity: parseInt(node.price.quantity) / (10 ** node.price.asset.decimals),
+                    username: node.fromAccount.user ? node.fromAccount.user.username : undefined,
+                    userContractAddress: node.fromAccount.address
+                }
+
+                asset.bestBid = bestBid
+                output.push(asset)
+            } catch (err) {
+                this.logger.warn(`Error parsing recent bid edge!`, {data: edge})
+            }
+        }
+        if (edges.length !== output.length) {
+            this.logger.warn(`_parseRecentBids: num parsed != num returned by api!`, {response: edges})
+        }
+        return output
+    }
+
     async fetchLatestMinted(): Promise<Asset | null> {
         let query = new AssetSearchQuery(this.collection)
         query.variables.count = 1
 
         let res = await this._postApi(query)
-
-        if (res == null) return null
-        let edges: []
-
-        try {
-            edges = res.data.query.search.edges
-            if (edges == null) throw new Error('edge array not present in response')
-        } catch (err) {
-            this.logger.error(`Malformed response in fetchLatestMinted`, {response: res, error: err})
-            return null
-        }
-
+        let edges: [] = res?.data?.query?.search?.edges ?? []
         let output: Asset = this._parseRangeQueryResponse(edges)[0]
 
         if (output != null) return output
+
+        // if it's null, something went wrong
+        this.logger.warn(`Error in fetchLatestMinted`, {response: res})
         return null
     }
 
     async fetchSymbolUsdPrice(symbol: string): Promise<number | null> {
         let query = new SymbolPriceQuery(symbol)
-
         let res = await this._postApi(query)
-        if (res == null) return null  // probably needs better error management
         
-        try {
-            return res.data.paymentAsset.asset.usdSpotPrice
-        } catch (err) {
-            this.logger.error(`Error fetching or parsing ${symbol}`, {error: err, response: res})
-        }
+        let usdSpotPrice = res?.data?.paymentAsset?.asset?.usdSpotPrice ?? null
+        if (usdSpotPrice) return usdSpotPrice
+
+        // if null then something went wrong
+        this.logger.warn(`Error in fetchSymbolUsdPrice for ${symbol}`, {response: res})
         return null
     }
 
     async fetchSingleAsset(id: number): Promise<Asset | null> {
         let query = new ItemQuery(this.nftContractAddress, id)
-
         let res = await this._postApi(query)
-        if (res == null) return null  // probably needs better error management
+        let data: Object = res?.data ?? undefined
 
-        let data: Object
-        try {
-            data = res.data
-            if (data == null) throw new Error('data not present in response')
-        } catch (err) {
-            this.logger.error(`Malformed response in fetchSingleAsset id ${id}`, {response: res, error: err})
+        if (data == null) {
+            this.logger.error(`Malformed response in fetchSingleAsset id ${id}`, {response: res})
             return null
         }
 
@@ -244,5 +262,26 @@ export class OpenSeaLib {
             return null
         }
         return parsed
+    }
+
+    async fetchRecentBids(): Promise<Asset[]> {
+        let query = new EventHistoryPollQuery(this.collection, this.lastBidPollTimestamp ? this.lastBidPollTimestamp : undefined)
+        let res = await this._postApi(query)
+
+        let edges: Array<any> = res?.data?.assetEvents?.edges ?? undefined
+        if (edges == null) {
+            this.logger.warn('Malformed response in fetchRecentBids', {response: res})
+            return []
+        }
+        if (edges.length >= 1) {
+            this.lastBidPollTimestamp = edges[0]?.node?.eventTimestamp ?? (() => {
+                this.logger.warn('Malformed timestamp in response', {response: res})
+                return this.lastBidPollTimestamp
+            })()
+        } else {
+            if (this.lastBidPollTimestamp == null) this.lastBidPollTimestamp = (new Date(Date.now() - 11 * 1000)).toISOString()
+        }
+
+        return this._parseRecentBidsResponse(edges)
     }
 }
