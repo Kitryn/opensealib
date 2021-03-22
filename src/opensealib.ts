@@ -37,6 +37,7 @@ export class OpenSeaLib {
         .catch((err: any) => {
             this.logger.error('POST Api error', {query: query})
             this.logger.error(err)
+            console.error(err)
             return undefined
         })
 
