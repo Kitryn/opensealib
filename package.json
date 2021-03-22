@@ -6,11 +6,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "postbuild": "npx ts-node ./tools/build" 
+    "postbuild": "npx ts-node ./tools/build"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/jsonexport": "^3.0.1",
     "@types/node": "^14.14.35",
     "@types/node-fetch": "^2.5.8",
     "@types/shelljs": "^0.8.8",
@@ -19,7 +20,9 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
+    "jsonexport": "^3.2.0",
     "node-fetch": "^2.6.1",
+    "p-queue": "^6.6.2",
     "winston": "^3.3.3"
   }
 }

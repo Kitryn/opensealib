@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import { Response } from 'node-fetch'
-import * as winston from 'winston'
+import winston from 'winston'
 const parentLogger = winston.loggers.get('default')
 const moduleLogger = parentLogger.child({module: 'opensealib'})
 
@@ -36,7 +36,8 @@ export class OpenSeaLib {
         })
         .then((res: Response) => res.json())
         .catch((err: any) => {
-            this.logger.error('POST Api error', {error: err, query: query})
+            this.logger.error('POST Api error', {query: query})
+            this.logger.error(err)
             return undefined
         })
 
@@ -101,7 +102,8 @@ export class OpenSeaLib {
                 output.push(asset)
             } catch (err) {
                 // parsing of elem failed
-                this.logger.error(`Error parsing element in range query response`, {elem: elem, error: err})
+                this.logger.error(`Error parsing element in range query response`, {elem: elem})
+                this.logger.error(err)
                 continue
             }
         }
@@ -180,7 +182,7 @@ export class OpenSeaLib {
                     let quantity = parseInt(bestAskData.takerAssetBundle.assetQuantities.edges[0].node.quantity)
                     let difference = quantity - parseInt(bestAskData.dutchAuctionFinalPrice)
                     let currentPrice = parseInt(bestAskData.dutchAuctionFinalPrice) + (difference * (remainingDuration / auctionDuration))
-                    bestAsk.quantity = currentPrice / (10 ** bestAskData.takerAssetBundle.assetQuantities.edges[0].asset.decimals)
+                    bestAsk.quantity = currentPrice / (10 ** bestAskData.takerAssetBundle.assetQuantities.edges[0].node.asset.decimals)
                 }
 
                 asset.bestAsk = bestAsk
@@ -188,7 +190,8 @@ export class OpenSeaLib {
 
             return asset
         } catch (err) {
-            this.logger.error(`Error parsing singleAssetResponse!`, {error: err, data: data})
+            this.logger.error(`Error parsing singleAssetResponse!`, {data: data})
+            this.logger.error(err)
             return null
         }
     }
