@@ -34,15 +34,39 @@ export class OpenSeaLib {
             body: JSON.stringify(query),
             headers: this._defaultHeaders
         })
-        .then((res: Response) => res.json())
         .catch((err: any) => {
             this.logger.error('POST Api error', {query: query})
             this.logger.error(err)
             return undefined
         })
 
-        if (res) return res
+        if (res) {
+            if (res.ok) {
+                let json = await res.json().catch((err: any) => {
+                    this.logger.error('Error parsing json', {response: res})
+                    return null
+                })
+
+                let errors = this._statusParser(json)
+                if (errors) {
+                    this.logger.warn(`Error fetching data from api`, {errors: errors})
+                    return null
+                }
+                return json
+            }
+            this.logger.warn(`Response not ok, code ${res.status}`)
+        }
         return null  // future error handling goes here
+    }
+
+    private _statusParser(data: any): Array<any> | null {
+        let errors = new Array<any>()
+        // data can be null!!! if data is null this function returns null
+        if (data?.errors) {
+            errors = errors.concat(data.errors)
+            return errors
+        }  // written this way for type checking array
+        return null
     }
 
     private _parseRangeQueryResponse(edges: Array<any>): Asset[] {
