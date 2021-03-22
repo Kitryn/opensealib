@@ -7,20 +7,28 @@ import { OpenSeaLib } from './opensealib'
 import PQueue from 'p-queue'
 import jsonexport from 'jsonexport'
 
-export async function generateHashmaskCsv() {
-    
+const CONCURRENCY = 400
+
+function flattenTraits(asset: Asset): any {
+    let output: any = {...asset}
+    if (asset.traits) {
+        for (let trait of asset.traits) {
+            output[trait.traitType] = trait.value
+        }
+    }
+    delete output.traits
+    return output
 }
 
-export async function generateChubbiesCsv() {
-    const opensealib = new OpenSeaLib(NFTContractAddress.chubbies, CollectionSlug.chubbies)
-    const batch_size = 400
-    const queue = new PQueue({concurrency: batch_size})
+export async function generateCsv(address: NFTContractAddress, collection: CollectionSlug) {
+    const opensealib = new OpenSeaLib(address, collection)
+    const queue = new PQueue({concurrency: CONCURRENCY})
 
     let lastMinted = await opensealib.fetchLatestMinted()
-    if (lastMinted == null) throw new Error('Unable to fetch lastMinted')
-    const lastTokenId = lastMinted.tokenId
-    const output: Asset[] = []
-
+    if (lastMinted == null) throw new Error(`Unable to fetch last minted in ${collection}`)
+    const lastTokenId = lastMinted.tokenId  // inclusive
+    const output = new Array<Asset>()
+    
     let count = 0
     queue.on('active', () => {
         count += 1
@@ -39,13 +47,7 @@ export async function generateChubbiesCsv() {
 
     let parsedOutput: Array<Object> = []
     parsedOutput = output.map((elem: Asset) => {
-        let out: any = {...elem}
-        if (elem.traits) {
-            for (let trait of elem.traits) {
-                out[trait.traitType] = trait.value
-            }
-        }
-        delete out.traits
+        let out: any = flattenTraits(elem)
         return out
     })
 
