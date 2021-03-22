@@ -177,8 +177,11 @@ export class OpenSeaLib {
 
                 if (bestAskData.orderType === 'DUTCH') {
                     // WARNING -- DUTCH AUCTION PRICES ARE ESTIMATED!!
-                    let auctionDuration = Date.parse(bestAskData.openedAt) - Date.parse(bestAskData.closedAt)
-                    let remainingDuration = Date.now() - Date.parse(bestAskData.closedAt)
+                    let closedAt = `${bestAskData.closedAt}+00:00`
+                    let openedAt = `${bestAskData.openedAt}+00:00`
+
+                    let auctionDuration = Date.parse(closedAt) - Date.parse(openedAt)
+                    let remainingDuration = Date.parse(closedAt) - Date.now()
                     let quantity = parseInt(bestAskData.takerAssetBundle.assetQuantities.edges[0].node.quantity)
                     let difference = quantity - parseInt(bestAskData.dutchAuctionFinalPrice)
                     let currentPrice = parseInt(bestAskData.dutchAuctionFinalPrice) + (difference * (remainingDuration / auctionDuration))
