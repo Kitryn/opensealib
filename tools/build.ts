@@ -3,7 +3,7 @@ import shell from 'shelljs'
 
 const buildFolder = './dist/'
 
-const folders = new Set(['./src/gql'])
+const folders = new Set(['./src/gql', './src/ABI'])
 
 // Copy Folders
 folders.forEach((folder) => {

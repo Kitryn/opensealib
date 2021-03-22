@@ -2,7 +2,7 @@ const winston = require('winston')
 const parentLogger = winston.loggers.get('default')
 const logger = parentLogger.child({module: 'csvGenerator'})
 
-import { NFTContractAddress, CollectionSlug, Asset } from './types'
+import { ContractAddress, CollectionSlug, Asset } from './types'
 import { OpenSeaLib } from './opensealib'
 import PQueue from 'p-queue'
 import jsonexport from 'jsonexport'
@@ -20,7 +20,7 @@ function flattenTraits(asset: Asset): any {
     return output
 }
 
-export async function generateCsv(address: NFTContractAddress, collection: CollectionSlug) {
+export async function generateCsv(address: ContractAddress, collection: CollectionSlug) {
     const opensealib = new OpenSeaLib(address, collection)
     const queue = new PQueue({concurrency: CONCURRENCY})
 
