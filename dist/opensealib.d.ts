@@ -8,12 +8,11 @@ export declare class OpenSeaLib {
     private _defaultHeaders;
     constructor(nftContractAddress: string, collection: CollectionSlug, xApiKey?: string);
     private _postApi;
-    private _statusParser;
     private _parseRangeQueryResponse;
     private _parseSingleAssetResponse;
     private _parseRecentBidsResponse;
-    fetchLatestMinted(): Promise<Asset | null>;
-    fetchSymbolUsdPrice(symbol: string): Promise<number | null>;
-    fetchSingleAsset(id: number): Promise<Asset | null>;
+    fetchLatestMinted(): Promise<Asset>;
+    fetchSymbolUsdPrice(symbol: string): Promise<number>;
+    fetchSingleAsset(id: number): Promise<Asset>;
     fetchRecentBids(): Promise<Asset[]>;
 }

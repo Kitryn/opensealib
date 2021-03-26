@@ -61,8 +61,7 @@ var OpenSeaLib = /** @class */ (function () {
     }
     OpenSeaLib.prototype._postApi = function (query) {
         return __awaiter(this, void 0, void 0, function () {
-            var res, json, errors;
-            var _this = this;
+            var res, json;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, node_fetch_1.default(GRAPHQL_URL, {
@@ -71,43 +70,25 @@ var OpenSeaLib = /** @class */ (function () {
                             headers: this._defaultHeaders
                         })
                             .catch(function (err) {
-                            _this.logger.error('POST Api error', { query: query });
-                            _this.logger.error(err);
-                            console.error(err);
-                            return undefined;
+                            throw new types_1.ApiError('POST Api error', err, query, undefined);
                         })];
                     case 1:
                         res = _a.sent();
-                        if (!res) return [3 /*break*/, 4];
                         if (!res.ok) return [3 /*break*/, 3];
                         return [4 /*yield*/, res.json().catch(function (err) {
-                                _this.logger.error('Error parsing json', { response: res });
-                                return null;
+                                throw new types_1.ValidateResponseError('Error parsing response into json', res, err);
                             })];
                     case 2:
                         json = _a.sent();
-                        errors = this._statusParser(json);
-                        if (errors) {
-                            this.logger.warn("Error fetching data from api", { errors: errors });
-                            return [2 /*return*/, null];
+                        if (json.errors) {
+                            // graphql error, not http error
+                            throw new types_1.ApiError('GraphQL Api Error', json.errors, query);
                         }
                         return [2 /*return*/, json];
-                    case 3:
-                        this.logger.warn("Response not ok, code " + res.status);
-                        _a.label = 4;
-                    case 4: return [2 /*return*/, null]; // future error handling goes here
+                    case 3: throw new types_1.ApiError('POST Api Response not ok', res, query, res.status);
                 }
             });
         });
-    };
-    OpenSeaLib.prototype._statusParser = function (data) {
-        var errors = new Array();
-        // data can be null!!! if data is null this function returns null
-        if (data === null || data === void 0 ? void 0 : data.errors) {
-            errors = errors.concat(data.errors);
-            return errors;
-        } // written this way for type checking array
-        return null;
     };
     OpenSeaLib.prototype._parseRangeQueryResponse = function (edges) {
         var output = new Array();
@@ -161,8 +142,8 @@ var OpenSeaLib = /** @class */ (function () {
             }
             catch (err) {
                 // parsing of elem failed
-                this.logger.error("Error parsing element in range query response", { elem: elem });
-                this.logger.error(err);
+                this.logger.warn("Error parsing element in range query response", { elem: elem });
+                this.logger.warn(err);
                 continue;
             }
         }
@@ -244,9 +225,7 @@ var OpenSeaLib = /** @class */ (function () {
             return asset;
         }
         catch (err) {
-            this.logger.error("Error parsing singleAssetResponse!", { data: data });
-            this.logger.error(err);
-            return null;
+            throw new types_1.ValidateResponseError('Error parsing singleAssetResponse from json', data, err);
         }
     };
     OpenSeaLib.prototype._parseRecentBidsResponse = function (edges) {
@@ -289,18 +268,14 @@ var OpenSeaLib = /** @class */ (function () {
                     case 0:
                         query = new types_1.AssetSearchQuery(this.collection);
                         query.variables.count = 1;
-                        return [4 /*yield*/, this._postApi(query)];
+                        return [4 /*yield*/, this._postApi(query)]; // can throw ValidateResponseError or ApiError
                     case 1:
-                        res = _e.sent();
+                        res = _e.sent() // can throw ValidateResponseError or ApiError
+                        ;
                         edges = (_d = (_c = (_b = (_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.query) === null || _b === void 0 ? void 0 : _b.search) === null || _c === void 0 ? void 0 : _c.edges) !== null && _d !== void 0 ? _d : [];
-                        output = this._parseRangeQueryResponse(edges)[0];
-                        if (output != null)
-                            return [2 /*return*/, output
-                                // if it's null, something went wrong
-                            ];
-                        // if it's null, something went wrong
-                        this.logger.warn("Error in fetchLatestMinted", { response: res });
-                        return [2 /*return*/, null];
+                        output = this._parseRangeQueryResponse(edges)[0] // this shouldn't throw any errors but logger.warns any parse errors
+                        ;
+                        return [2 /*return*/, output];
                 }
             });
         });
@@ -313,9 +288,10 @@ var OpenSeaLib = /** @class */ (function () {
                 switch (_e.label) {
                     case 0:
                         query = new types_1.SymbolPriceQuery(symbol);
-                        return [4 /*yield*/, this._postApi(query)];
+                        return [4 /*yield*/, this._postApi(query)]; // can throw ValidateResponseError or ApiError
                     case 1:
-                        res = _e.sent();
+                        res = _e.sent() // can throw ValidateResponseError or ApiError
+                        ;
                         usdSpotPrice = (_d = (_c = (_b = (_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.paymentAsset) === null || _b === void 0 ? void 0 : _b.asset) === null || _c === void 0 ? void 0 : _c.usdSpotPrice) !== null && _d !== void 0 ? _d : null;
                         if (usdSpotPrice)
                             return [2 /*return*/, usdSpotPrice
@@ -323,7 +299,7 @@ var OpenSeaLib = /** @class */ (function () {
                             ];
                         // if null then something went wrong
                         this.logger.warn("Error in fetchSymbolUsdPrice for " + symbol, { response: res });
-                        return [2 /*return*/, null];
+                        throw new types_1.ValidateResponseError("Error fetching usdSpotSprice for " + symbol, res, query);
                 }
             });
         });
@@ -336,19 +312,16 @@ var OpenSeaLib = /** @class */ (function () {
                 switch (_b.label) {
                     case 0:
                         query = new types_1.ItemQuery(this.nftContractAddress, id);
-                        return [4 /*yield*/, this._postApi(query)];
+                        return [4 /*yield*/, this._postApi(query)]; // can throw ValidateResponseError or ApiError
                     case 1:
-                        res = _b.sent();
+                        res = _b.sent() // can throw ValidateResponseError or ApiError
+                        ;
                         data = (_a = res === null || res === void 0 ? void 0 : res.data) !== null && _a !== void 0 ? _a : undefined;
                         if (data == null) {
-                            this.logger.error("Malformed response in fetchSingleAsset id " + id, { response: res });
-                            return [2 /*return*/, null];
+                            throw new types_1.ValidateResponseError("Malformed response in fetchSingleAsset id " + id, res, query);
                         }
-                        parsed = this._parseSingleAssetResponse(data);
-                        if (parsed == null) {
-                            this.logger.error("Error parsing data in fetchSingleAsset id " + id, { data: data });
-                            return [2 /*return*/, null];
-                        }
+                        parsed = this._parseSingleAssetResponse(data) // can throw a ValidateResponseError
+                        ;
                         return [2 /*return*/, parsed];
                 }
             });
@@ -358,30 +331,28 @@ var OpenSeaLib = /** @class */ (function () {
         var _a, _b, _c, _d, _e, _f;
         return __awaiter(this, void 0, void 0, function () {
             var query, res, edges;
-            var _this = this;
             return __generator(this, function (_g) {
                 switch (_g.label) {
                     case 0:
                         query = new types_1.EventHistoryPollQuery(this.collection, this.lastBidPollTimestamp ? this.lastBidPollTimestamp : undefined);
-                        return [4 /*yield*/, this._postApi(query)];
+                        return [4 /*yield*/, this._postApi(query)]; // can throw ValidateResponseError or ApiError
                     case 1:
-                        res = _g.sent();
+                        res = _g.sent() // can throw ValidateResponseError or ApiError
+                        ;
                         edges = (_c = (_b = (_a = res === null || res === void 0 ? void 0 : res.data) === null || _a === void 0 ? void 0 : _a.assetEvents) === null || _b === void 0 ? void 0 : _b.edges) !== null && _c !== void 0 ? _c : undefined;
                         if (edges == null) {
-                            this.logger.warn('Malformed response in fetchRecentBids', { response: res });
-                            return [2 /*return*/, []];
+                            throw new types_1.ValidateResponseError("Malformed response in fetchRecentBids", res, query);
                         }
                         if (edges.length >= 1) {
                             this.lastBidPollTimestamp = (_f = (_e = (_d = edges[0]) === null || _d === void 0 ? void 0 : _d.node) === null || _e === void 0 ? void 0 : _e.eventTimestamp) !== null && _f !== void 0 ? _f : (function () {
-                                _this.logger.warn('Malformed timestamp in response', { response: res });
-                                return _this.lastBidPollTimestamp;
+                                throw new types_1.ValidateResponseError("Malformed timestamp in response", res, query);
                             })();
                         }
                         else {
                             if (this.lastBidPollTimestamp == null)
                                 this.lastBidPollTimestamp = (new Date(Date.now() - 11 * 1000)).toISOString();
                         }
-                        return [2 /*return*/, this._parseRecentBidsResponse(edges)];
+                        return [2 /*return*/, this._parseRecentBidsResponse(edges)]; // this shouldn't throw any errors but logger.warns any parse errors
                 }
             });
         });

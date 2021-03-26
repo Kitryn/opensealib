@@ -116,4 +116,15 @@ export interface Trait {
     traitType: string;
     value: string;
 }
+export declare class ApiError extends Error {
+    statusCode: number | undefined;
+    query: Query;
+    data: any;
+    constructor(message: string, data: any, query: Query, statusCode?: number, ...params: any);
+}
+export declare class ValidateResponseError extends Error {
+    data: any;
+    res: any;
+    constructor(message: string, res: any, data: any, ...params: any);
+}
 export {};

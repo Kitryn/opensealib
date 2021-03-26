@@ -40,9 +40,8 @@ export class OpenSeaLib {
         
         if (res.ok) {
             let json = await res.json().catch((err: any) => {
-                throw new ValidateResponseError('Error parsing json', res, err)
+                throw new ValidateResponseError('Error parsing response into json', res, err)
             })
-
             if (json.errors) {
                 // graphql error, not http error
                 throw new ApiError('GraphQL Api Error', json.errors, query)
@@ -110,8 +109,8 @@ export class OpenSeaLib {
                 output.push(asset)
             } catch (err) {
                 // parsing of elem failed
-                this.logger.error(`Error parsing element in range query response`, {elem: elem})
-                this.logger.error(err)
+                this.logger.warn(`Error parsing element in range query response`, {elem: elem})
+                this.logger.warn(err)
                 continue
             }
         }
@@ -119,7 +118,7 @@ export class OpenSeaLib {
         return output
     }
 
-    private _parseSingleAssetResponse(data: any): Asset | null {
+    private _parseSingleAssetResponse(data: any): Asset {
         let asset: Asset
         try {
             asset = {
@@ -201,9 +200,7 @@ export class OpenSeaLib {
 
             return asset
         } catch (err) {
-            this.logger.error(`Error parsing singleAssetResponse!`, {data: data})
-            this.logger.error(err)
-            return null
+            throw new ValidateResponseError('Error parsing singleAssetResponse from json', data, err)
         }
     }
 
@@ -239,69 +236,58 @@ export class OpenSeaLib {
         return output
     }
 
-    async fetchLatestMinted(): Promise<Asset | null> {
+    async fetchLatestMinted(): Promise<Asset> {
         let query = new AssetSearchQuery(this.collection)
         query.variables.count = 1
 
-        let res = await this._postApi(query)
+        let res = await this._postApi(query)  // can throw ValidateResponseError or ApiError
         let edges: [] = res?.data?.query?.search?.edges ?? []
-        let output: Asset = this._parseRangeQueryResponse(edges)[0]
+        let output: Asset = this._parseRangeQueryResponse(edges)[0]  // this shouldn't throw any errors but logger.warns any parse errors
 
-        if (output != null) return output
-
-        // if it's null, something went wrong
-        this.logger.warn(`Error in fetchLatestMinted`, {response: res})
-        return null
+        return output
     }
 
-    async fetchSymbolUsdPrice(symbol: string): Promise<number | null> {
+    async fetchSymbolUsdPrice(symbol: string): Promise<number> {
         let query = new SymbolPriceQuery(symbol)
-        let res = await this._postApi(query)
+        let res = await this._postApi(query)  // can throw ValidateResponseError or ApiError
         
         let usdSpotPrice = res?.data?.paymentAsset?.asset?.usdSpotPrice ?? null
         if (usdSpotPrice) return usdSpotPrice
 
         // if null then something went wrong
         this.logger.warn(`Error in fetchSymbolUsdPrice for ${symbol}`, {response: res})
-        return null
+        throw new ValidateResponseError(`Error fetching usdSpotSprice for ${symbol}`, res, query)
     }
 
-    async fetchSingleAsset(id: number): Promise<Asset | null> {
+    async fetchSingleAsset(id: number): Promise<Asset> {
         let query = new ItemQuery(this.nftContractAddress, id)
-        let res = await this._postApi(query)
+        let res = await this._postApi(query)  // can throw ValidateResponseError or ApiError
         let data: Object = res?.data ?? undefined
 
         if (data == null) {
-            this.logger.error(`Malformed response in fetchSingleAsset id ${id}`, {response: res})
-            return null
+            throw new ValidateResponseError(`Malformed response in fetchSingleAsset id ${id}`, res, query)
         }
 
-        const parsed = this._parseSingleAssetResponse(data)
-        if (parsed == null) {
-            this.logger.error(`Error parsing data in fetchSingleAsset id ${id}`, {data: data})
-            return null
-        }
+        const parsed = this._parseSingleAssetResponse(data)  // can throw a ValidateResponseError
         return parsed
     }
 
     async fetchRecentBids(): Promise<Asset[]> {
         let query = new EventHistoryPollQuery(this.collection, this.lastBidPollTimestamp ? this.lastBidPollTimestamp : undefined)
-        let res = await this._postApi(query)
+        let res = await this._postApi(query)  // can throw ValidateResponseError or ApiError
 
         let edges: Array<any> = res?.data?.assetEvents?.edges ?? undefined
         if (edges == null) {
-            this.logger.warn('Malformed response in fetchRecentBids', {response: res})
-            return []
+            throw new ValidateResponseError(`Malformed response in fetchRecentBids`, res, query)
         }
         if (edges.length >= 1) {
             this.lastBidPollTimestamp = edges[0]?.node?.eventTimestamp ?? (() => {
-                this.logger.warn('Malformed timestamp in response', {response: res})
-                return this.lastBidPollTimestamp
+                throw new ValidateResponseError(`Malformed timestamp in response`, res, query)
             })()
         } else {
             if (this.lastBidPollTimestamp == null) this.lastBidPollTimestamp = (new Date(Date.now() - 11 * 1000)).toISOString()
         }
 
-        return this._parseRecentBidsResponse(edges)
+        return this._parseRecentBidsResponse(edges)  // this shouldn't throw any errors but logger.warns any parse errors
     }
 }

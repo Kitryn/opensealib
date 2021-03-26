@@ -34,7 +34,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SymbolPriceQuery = exports.EventHistoryPollQuery = exports.EventHistoryQuery = exports.ItemQuery = exports.AssetSearchQuery = exports.Query = exports.ContractAddress = exports.CollectionSlug = void 0;
+exports.ValidateResponseError = exports.ApiError = exports.SymbolPriceQuery = exports.EventHistoryPollQuery = exports.EventHistoryQuery = exports.ItemQuery = exports.AssetSearchQuery = exports.Query = exports.ContractAddress = exports.CollectionSlug = void 0;
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
 var _assetSearchQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomAssetSearch.gql'), 'utf8');
@@ -173,3 +173,44 @@ var SymbolPriceQuery = /** @class */ (function (_super) {
     return SymbolPriceQuery;
 }(Query));
 exports.SymbolPriceQuery = SymbolPriceQuery;
+// -----------------
+var ApiError = /** @class */ (function (_super) {
+    __extends(ApiError, _super);
+    function ApiError(message, data, query, statusCode) {
+        var params = [];
+        for (var _i = 4; _i < arguments.length; _i++) {
+            params[_i - 4] = arguments[_i];
+        }
+        var _this = _super.apply(this, params) || this;
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(_this, ApiError);
+        }
+        _this.name = "Api Fetch Error";
+        _this.message = message;
+        _this.statusCode = statusCode;
+        _this.data = data;
+        _this.query = query;
+        return _this;
+    }
+    return ApiError;
+}(Error));
+exports.ApiError = ApiError;
+var ValidateResponseError = /** @class */ (function (_super) {
+    __extends(ValidateResponseError, _super);
+    function ValidateResponseError(message, res, data) {
+        var params = [];
+        for (var _i = 3; _i < arguments.length; _i++) {
+            params[_i - 3] = arguments[_i];
+        }
+        var _this = _super.apply(this, params) || this;
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(_this, ValidateResponseError);
+        }
+        _this.name = "Validate Response Error";
+        _this.message = message;
+        _this.data = data;
+        return _this;
+    }
+    return ValidateResponseError;
+}(Error));
+exports.ValidateResponseError = ValidateResponseError;
