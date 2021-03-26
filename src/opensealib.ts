@@ -4,7 +4,7 @@ import winston from 'winston'
 const parentLogger = winston.loggers.get('default')
 const moduleLogger = parentLogger.child({module: 'opensealib'})
 
-import { CollectionSlug, AssetSearchQuery, Query, ItemQuery, EventHistoryPollQuery, SymbolPriceQuery, LastSale, Order, Asset, Trait } from './types'
+import { CollectionSlug, AssetSearchQuery, Query, ItemQuery, EventHistoryPollQuery, SymbolPriceQuery, LastSale, Order, Asset, Trait, ApiError, ValidateResponseError } from './types'
 
 const GRAPHQL_URL = 'https://api.opensea.io/graphql/'
 
@@ -28,46 +28,29 @@ export class OpenSeaLib {
         }
     }
 
-    private async _postApi(query: Query): Promise<any | null> {
+    private async _postApi(query: Query): Promise<any> {
         let res = await fetch(GRAPHQL_URL, {
             method: 'post',
             body: JSON.stringify(query),
             headers: this._defaultHeaders
         })
         .catch((err: any) => {
-            this.logger.error('POST Api error', {query: query})
-            this.logger.error(err)
-            console.error(err)
-            return undefined
+            throw new ApiError('POST Api error', err, query, undefined)
         })
+        
+        if (res.ok) {
+            let json = await res.json().catch((err: any) => {
+                throw new ValidateResponseError('Error parsing json', res, err)
+            })
 
-        if (res) {
-            if (res.ok) {
-                let json = await res.json().catch((err: any) => {
-                    this.logger.error('Error parsing json', {response: res})
-                    return null
-                })
-
-                let errors = this._statusParser(json)
-                if (errors) {
-                    this.logger.warn(`Error fetching data from api`, {errors: errors})
-                    return null
-                }
-                return json
+            if (json.errors) {
+                // graphql error, not http error
+                throw new ApiError('GraphQL Api Error', json.errors, query)
             }
-            this.logger.warn(`Response not ok, code ${res.status}`)
+            return json
         }
-        return null  // future error handling goes here
-    }
-
-    private _statusParser(data: any): Array<any> | null {
-        let errors = new Array<any>()
-        // data can be null!!! if data is null this function returns null
-        if (data?.errors) {
-            errors = errors.concat(data.errors)
-            return errors
-        }  // written this way for type checking array
-        return null
+        
+        throw new ApiError('POST Api Response not ok', res, query, res.status)
     }
 
     private _parseRangeQueryResponse(edges: Array<any>): Asset[] {

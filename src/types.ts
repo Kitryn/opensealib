@@ -188,3 +188,38 @@ export interface Trait {
     traitType: string
     value: string
 }
+
+// -----------------
+
+export class ApiError extends Error {
+    statusCode: number | undefined
+    query: Query
+    data: any
+
+    constructor(message: string, data: any, query: Query, statusCode?: number, ...params: any) {
+        super(...params)
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, ApiError)
+        }
+        this.name = "Api Fetch Error"
+        this.message = message
+        this.statusCode = statusCode
+        this.data = data;
+        this.query = query
+    }
+}
+
+export class ValidateResponseError extends Error {
+    data: any
+    res: any
+    
+    constructor(message: string, res: any, data: any, ...params: any) {
+        super(...params)
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, ValidateResponseError)
+        }
+        this.name = "Validate Response Error"
+        this.message = message
+        this.data = data
+    }
+}
