@@ -34,7 +34,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ValidateResponseError = exports.ApiError = exports.SymbolPriceQuery = exports.EventHistoryPollQuery = exports.EventHistoryQuery = exports.ItemQuery = exports.AssetSearchQuery = exports.Query = exports.ContractAddress = exports.CollectionSlug = void 0;
+exports.ValidateResponseError = exports.GqlApiError = exports.ApiError = exports.SymbolPriceQuery = exports.EventHistoryPollQuery = exports.EventHistoryQuery = exports.ItemQuery = exports.AssetSearchQuery = exports.Query = exports.ContractAddress = exports.CollectionSlug = void 0;
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
 var _assetSearchQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomAssetSearch.gql'), 'utf8');
@@ -78,7 +78,7 @@ var AssetSearchQuery = /** @class */ (function (_super) {
             count: 100,
             resultModel: 'ASSETS',
             cursor: null,
-            sortBy: 'BIRTH_DATE',
+            sortBy: 'CREATED_DATE',
             numericTraits: new Array()
         };
         _this.variables.collections.push(collection);
@@ -185,7 +185,7 @@ var ApiError = /** @class */ (function (_super) {
         if (Error.captureStackTrace) {
             Error.captureStackTrace(_this, ApiError);
         }
-        _this.name = "Api Fetch Error";
+        _this.name = 'Api Fetch Error';
         _this.message = message;
         _this.statusCode = statusCode;
         _this.data = data;
@@ -195,6 +195,26 @@ var ApiError = /** @class */ (function (_super) {
     return ApiError;
 }(Error));
 exports.ApiError = ApiError;
+var GqlApiError = /** @class */ (function (_super) {
+    __extends(GqlApiError, _super);
+    function GqlApiError(message, data, query) {
+        var params = [];
+        for (var _i = 3; _i < arguments.length; _i++) {
+            params[_i - 3] = arguments[_i];
+        }
+        var _this = _super.apply(this, params) || this;
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(_this, GqlApiError);
+        }
+        _this.name = 'Gql Api Fetch Error';
+        _this.message = message;
+        _this.data = data;
+        _this.query = query;
+        return _this;
+    }
+    return GqlApiError;
+}(Error));
+exports.GqlApiError = GqlApiError;
 var ValidateResponseError = /** @class */ (function (_super) {
     __extends(ValidateResponseError, _super);
     function ValidateResponseError(message, res, data) {

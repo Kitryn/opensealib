@@ -122,6 +122,11 @@ export declare class ApiError extends Error {
     data: any;
     constructor(message: string, data: any, query: Query, statusCode?: number, ...params: any);
 }
+export declare class GqlApiError extends Error {
+    data: any;
+    query: Query;
+    constructor(message: string, data: any, query: Query, ...params: any);
+}
 export declare class ValidateResponseError extends Error {
     data: any;
     res: any;

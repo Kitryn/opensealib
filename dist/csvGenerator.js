@@ -54,6 +54,7 @@ exports.generateCsv = void 0;
 var winston = require('winston');
 var parentLogger = winston.loggers.get('default');
 var logger = parentLogger.child({ module: 'csvGenerator' });
+var types_1 = require("./types");
 var opensealib_1 = require("./opensealib");
 var p_queue_1 = __importDefault(require("p-queue"));
 var jsonexport_1 = __importDefault(require("jsonexport"));
@@ -78,11 +79,10 @@ function generateCsv(address, collection) {
                 case 0:
                     opensealib = new opensealib_1.OpenSeaLib(address, collection);
                     queue = new p_queue_1.default({ concurrency: CONCURRENCY });
-                    return [4 /*yield*/, opensealib.fetchLatestMinted()];
+                    return [4 /*yield*/, opensealib.fetchLatestMinted()]; // can throw ValidateResponseError or ApiError -- not handled to let rethrow
                 case 1:
-                    lastMinted = _a.sent();
-                    if (lastMinted == null)
-                        throw new Error("Unable to fetch last minted in " + collection);
+                    lastMinted = _a.sent() // can throw ValidateResponseError or ApiError -- not handled to let rethrow
+                    ;
                     lastTokenId = lastMinted.tokenId // inclusive
                     ;
                     output = new Array();
@@ -94,15 +94,36 @@ function generateCsv(address, collection) {
                     });
                     _loop_1 = function (i) {
                         (function () { return __awaiter(_this, void 0, void 0, function () {
-                            var asset;
+                            var asset, err_1;
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
-                                    case 0: return [4 /*yield*/, queue.add(function () { return opensealib.fetchSingleAsset(i); })];
+                                    case 0:
+                                        _a.trys.push([0, 2, , 3]);
+                                        return [4 /*yield*/, queue.add(function () { return opensealib.fetchSingleAsset(i); })];
                                     case 1:
                                         asset = _a.sent();
                                         if (asset)
                                             output.push(asset);
-                                        return [2 /*return*/];
+                                        return [3 /*break*/, 3];
+                                    case 2:
+                                        err_1 = _a.sent();
+                                        if (err_1 instanceof types_1.ApiError) {
+                                            // should be safe to retry
+                                            logger.error(err_1);
+                                        }
+                                        else if (err_1 instanceof types_1.GqlApiError) {
+                                            // Not safe to retry
+                                            logger.error(err_1);
+                                        }
+                                        else if (err_1 instanceof types_1.ValidateResponseError) {
+                                            // May or may not be safe to retry
+                                            logger.error(err_1);
+                                        }
+                                        else {
+                                            throw err_1;
+                                        }
+                                        return [3 /*break*/, 3];
+                                    case 3: return [2 /*return*/];
                                 }
                             });
                         }); })();

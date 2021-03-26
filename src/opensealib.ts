@@ -4,7 +4,7 @@ import winston from 'winston'
 const parentLogger = winston.loggers.get('default')
 const moduleLogger = parentLogger.child({module: 'opensealib'})
 
-import { CollectionSlug, AssetSearchQuery, Query, ItemQuery, EventHistoryPollQuery, SymbolPriceQuery, LastSale, Order, Asset, Trait, ApiError, ValidateResponseError } from './types'
+import { CollectionSlug, AssetSearchQuery, Query, ItemQuery, EventHistoryPollQuery, SymbolPriceQuery, LastSale, Order, Asset, Trait, ApiError, ValidateResponseError, GqlApiError } from './types'
 
 const GRAPHQL_URL = 'https://api.opensea.io/graphql/'
 
@@ -44,7 +44,7 @@ export class OpenSeaLib {
             })
             if (json.errors) {
                 // graphql error, not http error
-                throw new ApiError('GraphQL Api Error', json.errors, query)
+                throw new GqlApiError('GraphQL Api Error', json.errors, query)
             }
             return json
         }

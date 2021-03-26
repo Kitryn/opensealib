@@ -62,7 +62,7 @@ export class AssetSearchQuery extends Query {
         count: 100,
         resultModel: 'ASSETS',
         cursor: null,
-        sortBy: 'BIRTH_DATE',
+        sortBy: 'CREATED_DATE',
         numericTraits: new Array<TokenIdTrait>()
     }
 
@@ -201,10 +201,26 @@ export class ApiError extends Error {
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, ApiError)
         }
-        this.name = "Api Fetch Error"
+        this.name = 'Api Fetch Error'
         this.message = message
         this.statusCode = statusCode
-        this.data = data;
+        this.data = data
+        this.query = query
+    }
+}
+
+export class GqlApiError extends Error {
+    data: any
+    query: Query
+    
+    constructor(message: string, data: any, query: Query, ...params: any) {
+        super(...params)
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, GqlApiError)
+        }
+        this.name = 'Gql Api Fetch Error'
+        this.message = message
+        this.data = data
         this.query = query
     }
 }

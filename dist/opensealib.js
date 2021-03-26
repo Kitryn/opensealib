@@ -82,7 +82,7 @@ var OpenSeaLib = /** @class */ (function () {
                         json = _a.sent();
                         if (json.errors) {
                             // graphql error, not http error
-                            throw new types_1.ApiError('GraphQL Api Error', json.errors, query);
+                            throw new types_1.GqlApiError('GraphQL Api Error', json.errors, query);
                         }
                         return [2 /*return*/, json];
                     case 3: throw new types_1.ApiError('POST Api Response not ok', res, query, res.status);

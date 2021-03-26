@@ -2,7 +2,7 @@ const winston = require('winston')
 const parentLogger = winston.loggers.get('default')
 const logger = parentLogger.child({module: 'csvGenerator'})
 
-import { ContractAddress, CollectionSlug, Asset } from './types'
+import { ContractAddress, CollectionSlug, Asset, ApiError, GqlApiError, ValidateResponseError } from './types'
 import { OpenSeaLib } from './opensealib'
 import PQueue from 'p-queue'
 import jsonexport from 'jsonexport'
@@ -24,8 +24,7 @@ export async function generateCsv(address: ContractAddress, collection: Collecti
     const opensealib = new OpenSeaLib(address, collection)
     const queue = new PQueue({concurrency: CONCURRENCY})
 
-    let lastMinted = await opensealib.fetchLatestMinted()
-    if (lastMinted == null) throw new Error(`Unable to fetch last minted in ${collection}`)
+    let lastMinted = await opensealib.fetchLatestMinted()  // can throw ValidateResponseError or ApiError -- not handled to let rethrow
     const lastTokenId = lastMinted.tokenId  // inclusive
     const output = new Array<Asset>()
     
@@ -37,8 +36,23 @@ export async function generateCsv(address: ContractAddress, collection: Collecti
 
     for (let i = 0; i <= lastTokenId; i++) {
         (async () => {
-            let asset = await queue.add(() => opensealib.fetchSingleAsset(i))
-            if (asset) output.push(asset)
+            try {
+                let asset = await queue.add(() => opensealib.fetchSingleAsset(i))
+                if (asset) output.push(asset)
+            } catch (err: any) {
+                if (err instanceof ApiError) {
+                    // should be safe to retry
+                    logger.error(err)
+                } else if (err instanceof GqlApiError) {
+                    // Not safe to retry
+                    logger.error(err)
+                } else if (err instanceof ValidateResponseError) {
+                    // May or may not be safe to retry
+                    logger.error(err)
+                } else {
+                    throw err
+                }
+            }
         })()
     }
 
