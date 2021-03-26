@@ -41,7 +41,7 @@ export async function generateCsv(address: ContractAddress, collection: Collecti
                 if (asset) output.push(asset)
             } catch (err: any) {
                 if (err instanceof ApiError) {
-                    // should be safe to retry
+                    // should be safe to retry  TODO
                     logger.error(err)
                 } else if (err instanceof GqlApiError) {
                     // Not safe to retry
