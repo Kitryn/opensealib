@@ -10,8 +10,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "postbuild": "npx ts-node ./tools/build",
-    "postinstall": "tsc"
+    "postbuild": "npx ts-node ./tools/build"
   },
   "author": "",
   "license": "ISC",
