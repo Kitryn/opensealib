@@ -108,7 +108,7 @@ function generateCsv(address, collection) {
                                     case 2:
                                         err_1 = _a.sent();
                                         if (err_1 instanceof types_1.ApiError) {
-                                            // should be safe to retry
+                                            // should be safe to retry  TODO
                                             logger.error(err_1);
                                         }
                                         else if (err_1 instanceof types_1.GqlApiError) {

@@ -34,7 +34,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ValidateResponseError = exports.GqlApiError = exports.ApiError = exports.SymbolPriceQuery = exports.EventHistoryPollQuery = exports.EventHistoryQuery = exports.ItemQuery = exports.AssetSearchQuery = exports.Query = exports.ContractAddress = exports.CollectionSlug = void 0;
+exports.ValidateResponseError = exports.GqlApiError = exports.ApiError = exports.SymbolPriceQuery = exports.EventHistoryPollQuery = exports.EventHistoryQuery = exports.ItemQuery = exports.AssetSearchQuery = exports.Query = exports.NFTXIndexes = exports.ContractAddress = exports.CollectionSlug = void 0;
 var fs = __importStar(require("fs"));
 var path = __importStar(require("path"));
 var _assetSearchQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomAssetSearch.gql'), 'utf8');
@@ -60,6 +60,10 @@ var ContractAddress;
     ContractAddress["maskSushi"] = "0xfd38565ef22299d491055f0c508f62dd9a669f0f";
     ContractAddress["weth"] = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 })(ContractAddress = exports.ContractAddress || (exports.ContractAddress = {}));
+var NFTXIndexes;
+(function (NFTXIndexes) {
+    NFTXIndexes["hashmasks"] = "MASK";
+})(NFTXIndexes = exports.NFTXIndexes || (exports.NFTXIndexes = {}));
 var Query = /** @class */ (function () {
     function Query(query) {
         this.variables = {};
