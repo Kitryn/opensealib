@@ -31,9 +31,6 @@ export declare enum ContractAddress {
     maskSushi = "0xfd38565ef22299d491055f0c508f62dd9a669f0f",
     weth = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
 }
-export declare enum NFTXIndexes {
-    hashmasks = "MASK"
-}
 export declare class Query {
     query: string;
     variables: {};
