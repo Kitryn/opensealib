@@ -1,19 +1,4 @@
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
@@ -35,13 +20,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValidateResponseError = exports.GqlApiError = exports.ApiError = exports.SymbolPriceQuery = exports.EventHistoryPollQuery = exports.EventHistoryQuery = exports.ItemQuery = exports.AssetSearchQuery = exports.Query = exports.ContractAddress = exports.CollectionSlug = void 0;
-var fs = __importStar(require("fs"));
-var path = __importStar(require("path"));
-var _assetSearchQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomAssetSearch.gql'), 'utf8');
-var _itemQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomItemQuery.gql'), 'utf8');
-var _eventHistoryQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomEventHistoryQuery.gql'), 'utf8');
-var _eventHistoryPollQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomEventHistoryPollQuery.gql'), 'utf8');
-var _symbolPriceQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomPriceQuery.gql'), 'utf8');
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
+const _assetSearchQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomAssetSearch.gql'), 'utf8');
+const _itemQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomItemQuery.gql'), 'utf8');
+const _eventHistoryQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomEventHistoryQuery.gql'), 'utf8');
+const _eventHistoryPollQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomEventHistoryPollQuery.gql'), 'utf8');
+const _symbolPriceQuery = fs.readFileSync(path.resolve(__dirname, './gql/CustomPriceQuery.gql'), 'utf8');
 var CollectionSlug;
 (function (CollectionSlug) {
     CollectionSlug["hashmasks"] = "hashmasks";
@@ -60,20 +45,18 @@ var ContractAddress;
     ContractAddress["maskSushi"] = "0xfd38565ef22299d491055f0c508f62dd9a669f0f";
     ContractAddress["weth"] = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2";
 })(ContractAddress = exports.ContractAddress || (exports.ContractAddress = {}));
-var Query = /** @class */ (function () {
-    function Query(query) {
+class Query {
+    constructor(query) {
         this.variables = {};
         this.query = query;
     }
-    return Query;
-}());
+}
 exports.Query = Query;
-var AssetSearchQuery = /** @class */ (function (_super) {
-    __extends(AssetSearchQuery, _super);
-    function AssetSearchQuery(collection, start, end) {
-        var _this = _super.call(this, _assetSearchQuery) || this;
-        _this.id = 'AssetSearchQuery';
-        _this.variables = {
+class AssetSearchQuery extends Query {
+    constructor(collection, start, end) {
+        super(_assetSearchQuery);
+        this.id = 'AssetSearchQuery';
+        this.variables = {
             collections: new Array(),
             count: 100,
             resultModel: 'ASSETS',
@@ -81,9 +64,9 @@ var AssetSearchQuery = /** @class */ (function (_super) {
             sortBy: 'CREATED_DATE',
             numericTraits: new Array()
         };
-        _this.variables.collections.push(collection);
+        this.variables.collections.push(collection);
         if (start != null && end != null) {
-            var numericTrait = {
+            let numericTrait = {
                 name: 'Token ID',
                 ranges: [
                     {
@@ -92,34 +75,28 @@ var AssetSearchQuery = /** @class */ (function (_super) {
                     }
                 ]
             };
-            _this.variables.numericTraits.push(numericTrait);
+            this.variables.numericTraits.push(numericTrait);
         }
-        return _this;
     }
-    return AssetSearchQuery;
-}(Query));
+}
 exports.AssetSearchQuery = AssetSearchQuery;
-var ItemQuery = /** @class */ (function (_super) {
-    __extends(ItemQuery, _super);
-    function ItemQuery(address, id) {
-        var _this = _super.call(this, _itemQuery) || this;
-        _this.id = 'itemQuery';
-        var archetype = {
+class ItemQuery extends Query {
+    constructor(address, id) {
+        super(_itemQuery);
+        this.id = 'itemQuery';
+        const archetype = {
             assetContractAddress: address,
             tokenId: id
         };
-        _this.variables = { archetype: archetype };
-        return _this;
+        this.variables = { archetype };
     }
-    return ItemQuery;
-}(Query));
+}
 exports.ItemQuery = ItemQuery;
-var EventHistoryQuery = /** @class */ (function (_super) {
-    __extends(EventHistoryQuery, _super);
-    function EventHistoryQuery(collection) {
-        var _this = _super.call(this, _eventHistoryQuery) || this;
-        _this.id = 'EventHistoryQuery';
-        _this.variables = {
+class EventHistoryQuery extends Query {
+    constructor(collection) {
+        super(_eventHistoryQuery);
+        this.id = 'EventHistoryQuery';
+        this.variables = {
             archetype: null,
             bundle: null,
             collections: new Array(),
@@ -130,19 +107,15 @@ var EventHistoryQuery = /** @class */ (function (_super) {
             showAll: true,
             identity: null
         };
-        _this.variables.collections.push(collection);
-        return _this;
+        this.variables.collections.push(collection);
     }
-    return EventHistoryQuery;
-}(Query));
+}
 exports.EventHistoryQuery = EventHistoryQuery;
-var EventHistoryPollQuery = /** @class */ (function (_super) {
-    __extends(EventHistoryPollQuery, _super);
-    function EventHistoryPollQuery(collection, timestamp) {
-        if (timestamp === void 0) { timestamp = (new Date(Date.now() - 11 * 1000)).toISOString(); }
-        var _this = _super.call(this, _eventHistoryPollQuery) || this;
-        _this.id = 'EventHistoryPollQuery';
-        _this.variables = {
+class EventHistoryPollQuery extends Query {
+    constructor(collection, timestamp = (new Date(Date.now() - 11 * 1000)).toISOString()) {
+        super(_eventHistoryPollQuery);
+        this.id = 'EventHistoryPollQuery';
+        this.variables = {
             archetype: null,
             categories: null,
             collections: new Array(),
@@ -153,84 +126,58 @@ var EventHistoryPollQuery = /** @class */ (function (_super) {
             identity: null,
             showAll: true
         };
-        _this.variables.collections.push(collection);
-        _this.variables.eventTimestamp_Gt = timestamp;
-        return _this;
+        this.variables.collections.push(collection);
+        this.variables.eventTimestamp_Gt = timestamp;
     }
-    return EventHistoryPollQuery;
-}(Query));
+}
 exports.EventHistoryPollQuery = EventHistoryPollQuery;
-var SymbolPriceQuery = /** @class */ (function (_super) {
-    __extends(SymbolPriceQuery, _super);
-    function SymbolPriceQuery(symbol) {
-        var _this = _super.call(this, _symbolPriceQuery) || this;
-        _this.id = 'priceQuery';
-        _this.variables = {
+class SymbolPriceQuery extends Query {
+    constructor(symbol) {
+        super(_symbolPriceQuery);
+        this.id = 'priceQuery';
+        this.variables = {
             symbol: symbol
         };
-        return _this;
     }
-    return SymbolPriceQuery;
-}(Query));
+}
 exports.SymbolPriceQuery = SymbolPriceQuery;
 // -----------------
-var ApiError = /** @class */ (function (_super) {
-    __extends(ApiError, _super);
-    function ApiError(message, data, query, statusCode) {
-        var params = [];
-        for (var _i = 4; _i < arguments.length; _i++) {
-            params[_i - 4] = arguments[_i];
-        }
-        var _this = _super.apply(this, params) || this;
+class ApiError extends Error {
+    constructor(message, data, query, statusCode, ...params) {
+        super(...params);
         if (Error.captureStackTrace) {
-            Error.captureStackTrace(_this, ApiError);
+            Error.captureStackTrace(this, ApiError);
         }
-        _this.name = 'Api Fetch Error';
-        _this.message = message;
-        _this.statusCode = statusCode;
-        _this.data = data;
-        _this.query = query;
-        return _this;
+        this.name = 'Api Fetch Error';
+        this.message = message;
+        this.statusCode = statusCode;
+        this.data = data;
+        this.query = query;
     }
-    return ApiError;
-}(Error));
+}
 exports.ApiError = ApiError;
-var GqlApiError = /** @class */ (function (_super) {
-    __extends(GqlApiError, _super);
-    function GqlApiError(message, data, query) {
-        var params = [];
-        for (var _i = 3; _i < arguments.length; _i++) {
-            params[_i - 3] = arguments[_i];
-        }
-        var _this = _super.apply(this, params) || this;
+class GqlApiError extends Error {
+    constructor(message, data, query, ...params) {
+        super(...params);
         if (Error.captureStackTrace) {
-            Error.captureStackTrace(_this, GqlApiError);
+            Error.captureStackTrace(this, GqlApiError);
         }
-        _this.name = 'Gql Api Fetch Error';
-        _this.message = message;
-        _this.data = data;
-        _this.query = query;
-        return _this;
+        this.name = 'Gql Api Fetch Error';
+        this.message = message;
+        this.data = data;
+        this.query = query;
     }
-    return GqlApiError;
-}(Error));
+}
 exports.GqlApiError = GqlApiError;
-var ValidateResponseError = /** @class */ (function (_super) {
-    __extends(ValidateResponseError, _super);
-    function ValidateResponseError(message, res, data) {
-        var params = [];
-        for (var _i = 3; _i < arguments.length; _i++) {
-            params[_i - 3] = arguments[_i];
-        }
-        var _this = _super.apply(this, params) || this;
+class ValidateResponseError extends Error {
+    constructor(message, res, data, ...params) {
+        super(...params);
         if (Error.captureStackTrace) {
-            Error.captureStackTrace(_this, ValidateResponseError);
+            Error.captureStackTrace(this, ValidateResponseError);
         }
-        _this.name = "Validate Response Error";
-        _this.message = message;
-        _this.data = data;
-        return _this;
+        this.name = "Validate Response Error";
+        this.message = message;
+        this.data = data;
     }
-    return ValidateResponseError;
-}(Error));
+}
 exports.ValidateResponseError = ValidateResponseError;

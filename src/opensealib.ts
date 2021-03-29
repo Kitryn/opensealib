@@ -29,6 +29,7 @@ export class OpenSeaLib {
     }
 
     private async _postApi(query: Query): Promise<any> {
+        this.logger.verbose('POST')
         let res = await fetch(GRAPHQL_URL, {
             method: 'post',
             body: JSON.stringify(query),
@@ -37,6 +38,7 @@ export class OpenSeaLib {
         .catch((err: any) => {
             throw new ApiError('POST Api error', err, query, undefined)
         })
+        this.logger.verbose(res)
         
         if (res.ok) {
             let json = await res.json().catch((err: any) => {
@@ -262,6 +264,7 @@ export class OpenSeaLib {
     async fetchSingleAsset(id: number): Promise<Asset> {
         let query = new ItemQuery(this.nftContractAddress, id)
         let res = await this._postApi(query)  // can throw ValidateResponseError or ApiError
+
         let data: Object = res?.data ?? undefined
 
         if (data == null) {
