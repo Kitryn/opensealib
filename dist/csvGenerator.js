@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateCsvFromUri = exports.generateCsv = void 0;
+exports.generateCsv = void 0;
 const winston = require('winston');
 const parentLogger = winston.loggers.get('default');
 const logger = parentLogger.child({ module: 'csvGenerator' });
@@ -130,4 +130,3 @@ function generateCsvFromUri(keys) {
         return yield jsonexport_1.default(output);
     });
 }
-exports.generateCsvFromUri = generateCsvFromUri;

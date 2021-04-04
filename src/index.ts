@@ -11,4 +11,4 @@ export {
     Trait
 } from './types'
 export { generateCsv } from './csvGenerator'
-export { Web3Interface } from './web3interface'
+export { Web3Interface, NFTBalance } from './web3interface'
