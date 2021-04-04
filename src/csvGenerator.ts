@@ -71,14 +71,14 @@ export async function generateCsv(address: ContractAddress, collection: Collecti
     return await jsonexport(parsedOutput)
 }
 
-async function generateCsvFromUri(keys: any[]) {
+export async function generateCsvFromUri(infuraApiKeys: any[]) {
     if (web3interface == null) {
-        web3interface = new Web3Interface(keys)  // lazy loading
+        web3interface = new Web3Interface(infuraApiKeys)  // lazy loading
     }
 
     const queue = new PQueue({concurrency: CONCURRENCY})
 
-    const totalSupply = await web3interface.crypteriorsInstance.methods.totalSupply().call()
+    const totalSupply = await web3interface.foxpunkjrsInstance.methods.totalSupply().call()
     let count = 0
     queue.on('active', () => {
         count += 1
@@ -88,7 +88,7 @@ async function generateCsvFromUri(keys: any[]) {
     let output: any[] = []
     for (let i = 0; i < totalSupply; i++) {
         (async () => {
-            const uri = `https://gateway.pinata.cloud/ipfs/QmdcoQDb6sNgkkChUT6HJ6voS7XnDot2u6ZQwZTSBM3uAy/${i}`
+            const uri = `https://foxpunkapi.herokuapp.com/url/${i}`
             
             let json = await queue.add(() => {
                 return fetch(uri, {

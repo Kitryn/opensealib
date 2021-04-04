@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateCsv = void 0;
+exports.generateCsvFromUri = exports.generateCsv = void 0;
 const winston = require('winston');
 const parentLogger = winston.loggers.get('default');
 const logger = parentLogger.child({ module: 'csvGenerator' });
@@ -84,13 +84,13 @@ function generateCsv(address, collection) {
     });
 }
 exports.generateCsv = generateCsv;
-function generateCsvFromUri(keys) {
+function generateCsvFromUri(infuraApiKeys) {
     return __awaiter(this, void 0, void 0, function* () {
         if (web3interface == null) {
-            web3interface = new web3interface_1.Web3Interface(keys); // lazy loading
+            web3interface = new web3interface_1.Web3Interface(infuraApiKeys); // lazy loading
         }
         const queue = new p_queue_1.default({ concurrency: CONCURRENCY });
-        const totalSupply = yield web3interface.crypteriorsInstance.methods.totalSupply().call();
+        const totalSupply = yield web3interface.foxpunkjrsInstance.methods.totalSupply().call();
         let count = 0;
         queue.on('active', () => {
             count += 1;
@@ -100,7 +100,7 @@ function generateCsvFromUri(keys) {
         let output = [];
         for (let i = 0; i < totalSupply; i++) {
             (() => __awaiter(this, void 0, void 0, function* () {
-                const uri = `https://gateway.pinata.cloud/ipfs/QmdcoQDb6sNgkkChUT6HJ6voS7XnDot2u6ZQwZTSBM3uAy/${i}`;
+                const uri = `https://foxpunkapi.herokuapp.com/url/${i}`;
                 let json = yield queue.add(() => {
                     return node_fetch_1.default(uri, {
                         method: 'GET'
@@ -130,3 +130,4 @@ function generateCsvFromUri(keys) {
         return yield jsonexport_1.default(output);
     });
 }
+exports.generateCsvFromUri = generateCsvFromUri;
