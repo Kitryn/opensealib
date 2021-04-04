@@ -30,6 +30,7 @@ export class Web3Interface {
     wethInfo: contractInfo
     maskSushi: contractInfo
     crypteriors: contractInfo
+    foxpunkjrs: contractInfo
     hashmasksInstance: Contract
     ganV2Instance: Contract
     waifuInstance: Contract
@@ -38,6 +39,7 @@ export class Web3Interface {
     wethInstance: Contract
     maskSushiInstance: Contract
     crypteriorsInstance: Contract
+    foxpunkjrsInstance: Contract
     
     constructor(infuraApiKeys: Array<string>) {
         const infuraUrls = infuraApiKeys.map((key: string) => {
@@ -86,6 +88,10 @@ export class Web3Interface {
             CONTRACT_ABI: require('./ABI/crypteriors_ABI.json'),
             CONTRACT_ADDRESS: ContractAddress.crypteriors
         }
+        this.foxpunkjrs = {
+            CONTRACT_ABI: require('./ABI/foxpunkjrs_ABI.json'),
+            CONTRACT_ADDRESS: ContractAddress.foxpunkjrs
+        }
 
         this.hashmasksInstance = new this.web3.eth.Contract(this.hashmasks.CONTRACT_ABI, this.hashmasks.CONTRACT_ADDRESS)
         this.ganV2Instance = new this.web3.eth.Contract(this.ganV2.CONTRACT_ABI, this.ganV2.CONTRACT_ADDRESS)
@@ -95,6 +101,7 @@ export class Web3Interface {
         this.wethInstance = new this.web3.eth.Contract(this.wethInfo.CONTRACT_ABI, this.wethInfo.CONTRACT_ADDRESS)
         this.maskSushiInstance = new this.web3.eth.Contract(this.maskSushi.CONTRACT_ABI, this.maskSushi.CONTRACT_ADDRESS)
         this.crypteriorsInstance = new this.web3.eth.Contract(this.crypteriors.CONTRACT_ABI, this.crypteriors.CONTRACT_ADDRESS)
+        this.foxpunkjrsInstance = new this.web3.eth.Contract(this.foxpunkjrs.CONTRACT_ABI, this.foxpunkjrs.CONTRACT_ADDRESS)
     }
 
     async GetMASKPrice(): Promise<number> {
@@ -138,6 +145,10 @@ export class Web3Interface {
         assert(count === output.length)
         assert(output.length === numberOwned)
         return output
+    }
+    
+    async GetFoxpunkJrsTokenIds(address: string): Promise<Array<number>> {
+        return await this.GetTokenIds(address, this.foxpunkjrsInstance)
     }
 
     async GetHashmaskTokenIds(address: string): Promise<Array<number>> {
@@ -205,6 +216,14 @@ export class Web3Interface {
             let bal: NFTBalance = {
                 contractAddress: ContractAddress.chubbies,
                 collectionSlug: CollectionSlug.chubbies,
+                tokenIdList: idList
+            }
+            return bal
+        }))
+        promises.push(this.GetFoxpunkJrsTokenIds(address).then((idList: Array<number>) => {
+            let bal: NFTBalance = {
+                contractAddress: ContractAddress.foxpunkjrs,
+                collectionSlug: CollectionSlug.foxpunkjrs,
                 tokenIdList: idList
             }
             return bal

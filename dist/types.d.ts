@@ -21,7 +21,8 @@ export declare enum CollectionSlug {
     gan_v2 = "bastard-gan-punks-v2",
     waifusion = "waifusion",
     chubbies = "chubbies",
-    crypteriors = "crypteriors"
+    crypteriors = "crypteriors",
+    foxpunkjrs = "foxpunk-jrs"
 }
 export declare enum ContractAddress {
     hashmasks = "0xc2c747e0f7004f9e8817db2ca4997657a7746928",
@@ -31,7 +32,8 @@ export declare enum ContractAddress {
     chubbies = "0x1db61fc42a843bad4d91a2d788789ea4055b8613",
     maskSushi = "0xfd38565ef22299d491055f0c508f62dd9a669f0f",
     weth = "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-    crypteriors = "0x417cf58dC18edd17025689D13AF2b85F403E130C"
+    crypteriors = "0x417cf58dC18edd17025689D13AF2b85F403E130C",
+    foxpunkjrs = "0x9efa7962ccb25884587526c0ce8bffab2622976b"
 }
 export declare class Query {
     query: string;

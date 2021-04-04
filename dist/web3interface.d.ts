@@ -21,6 +21,7 @@ export declare class Web3Interface {
     wethInfo: contractInfo;
     maskSushi: contractInfo;
     crypteriors: contractInfo;
+    foxpunkjrs: contractInfo;
     hashmasksInstance: Contract;
     ganV2Instance: Contract;
     waifuInstance: Contract;
@@ -29,11 +30,13 @@ export declare class Web3Interface {
     wethInstance: Contract;
     maskSushiInstance: Contract;
     crypteriorsInstance: Contract;
+    foxpunkjrsInstance: Contract;
     constructor(infuraApiKeys: Array<string>);
     GetMASKPrice(): Promise<number>;
     GetEthBalance(address: string): Promise<number>;
     GetWEthBalance(address: string): Promise<number>;
     private GetTokenIds;
+    GetFoxpunkJrsTokenIds(address: string): Promise<Array<number>>;
     GetHashmaskTokenIds(address: string): Promise<Array<number>>;
     GetMooncatTokenIds(address: string): Promise<Array<number>>;
     GetGanV2TokenIds(address: string): Promise<Array<number>>;

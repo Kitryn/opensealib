@@ -67,6 +67,10 @@ class Web3Interface {
             CONTRACT_ABI: require('./ABI/crypteriors_ABI.json'),
             CONTRACT_ADDRESS: types_1.ContractAddress.crypteriors
         };
+        this.foxpunkjrs = {
+            CONTRACT_ABI: require('./ABI/foxpunkjrs_ABI.json'),
+            CONTRACT_ADDRESS: types_1.ContractAddress.foxpunkjrs
+        };
         this.hashmasksInstance = new this.web3.eth.Contract(this.hashmasks.CONTRACT_ABI, this.hashmasks.CONTRACT_ADDRESS);
         this.ganV2Instance = new this.web3.eth.Contract(this.ganV2.CONTRACT_ABI, this.ganV2.CONTRACT_ADDRESS);
         this.waifuInstance = new this.web3.eth.Contract(this.waifu.CONTRACT_ABI, this.waifu.CONTRACT_ADDRESS);
@@ -75,6 +79,7 @@ class Web3Interface {
         this.wethInstance = new this.web3.eth.Contract(this.wethInfo.CONTRACT_ABI, this.wethInfo.CONTRACT_ADDRESS);
         this.maskSushiInstance = new this.web3.eth.Contract(this.maskSushi.CONTRACT_ABI, this.maskSushi.CONTRACT_ADDRESS);
         this.crypteriorsInstance = new this.web3.eth.Contract(this.crypteriors.CONTRACT_ABI, this.crypteriors.CONTRACT_ADDRESS);
+        this.foxpunkjrsInstance = new this.web3.eth.Contract(this.foxpunkjrs.CONTRACT_ABI, this.foxpunkjrs.CONTRACT_ADDRESS);
     }
     GetMASKPrice() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -118,6 +123,11 @@ class Web3Interface {
             assert_1.default(count === output.length);
             assert_1.default(output.length === numberOwned);
             return output;
+        });
+    }
+    GetFoxpunkJrsTokenIds(address) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield this.GetTokenIds(address, this.foxpunkjrsInstance);
         });
     }
     GetHashmaskTokenIds(address) {
@@ -190,6 +200,14 @@ class Web3Interface {
                 let bal = {
                     contractAddress: types_1.ContractAddress.chubbies,
                     collectionSlug: types_1.CollectionSlug.chubbies,
+                    tokenIdList: idList
+                };
+                return bal;
+            }));
+            promises.push(this.GetFoxpunkJrsTokenIds(address).then((idList) => {
+                let bal = {
+                    contractAddress: types_1.ContractAddress.foxpunkjrs,
+                    collectionSlug: types_1.CollectionSlug.foxpunkjrs,
                     tokenIdList: idList
                 };
                 return bal;
