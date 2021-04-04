@@ -104,4 +104,5 @@ typings/
 
 
 tmp.js
-out.csv
+*.csv
+keys*.json

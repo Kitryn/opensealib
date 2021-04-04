@@ -12,15 +12,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.generateCsv = void 0;
+exports.generateCsvFromUri = exports.generateCsv = void 0;
 const winston = require('winston');
 const parentLogger = winston.loggers.get('default');
 const logger = parentLogger.child({ module: 'csvGenerator' });
 const types_1 = require("./types");
 const opensealib_1 = require("./opensealib");
 const p_queue_1 = __importDefault(require("p-queue"));
+const node_fetch_1 = __importDefault(require("node-fetch"));
 const jsonexport_1 = __importDefault(require("jsonexport"));
+const web3interface_1 = require("./web3interface");
 const CONCURRENCY = 400;
+let web3interface;
 function flattenTraits(asset) {
     let output = Object.assign({}, asset);
     if (asset.traits) {
@@ -81,3 +84,50 @@ function generateCsv(address, collection) {
     });
 }
 exports.generateCsv = generateCsv;
+function generateCsvFromUri(keys) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (web3interface == null) {
+            web3interface = new web3interface_1.Web3Interface(keys); // lazy loading
+        }
+        const queue = new p_queue_1.default({ concurrency: CONCURRENCY });
+        const totalSupply = yield web3interface.crypteriorsInstance.methods.totalSupply().call();
+        let count = 0;
+        queue.on('active', () => {
+            count += 1;
+            if (count % 100 === 0)
+                logger.info(`Item ${count}. Size ${queue.size} Pending ${queue.pending}`);
+        });
+        let output = [];
+        for (let i = 0; i < totalSupply; i++) {
+            (() => __awaiter(this, void 0, void 0, function* () {
+                const uri = `https://gateway.pinata.cloud/ipfs/QmdcoQDb6sNgkkChUT6HJ6voS7XnDot2u6ZQwZTSBM3uAy/${i}`;
+                let json = yield queue.add(() => {
+                    return node_fetch_1.default(uri, {
+                        method: 'GET'
+                    }).then(res => res.json()).catch(err => {
+                        console.error(err);
+                    });
+                });
+                if (json)
+                    output.push(json);
+            }))();
+        }
+        yield queue.onIdle(); // all work is done
+        output = output.sort((a, b) => {
+            const an = parseInt(a.name.split('#')[1]);
+            const bn = parseInt(b.name.split('#')[1]);
+            return an - bn;
+        }).map((elem) => {
+            let output = {
+                tokenId: parseInt(elem.name.split('#')[1])
+            };
+            for (let trait of elem.attributes) {
+                output[trait.trait_type] = trait.value;
+            }
+            return output;
+        });
+        logger.info(`${output.length} / ${totalSupply} fetched`);
+        return yield jsonexport_1.default(output);
+    });
+}
+exports.generateCsvFromUri = generateCsvFromUri;

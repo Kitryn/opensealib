@@ -33,7 +33,8 @@ export enum CollectionSlug {
     mooncats = 'wrapped-mooncatsrescue',
     gan_v2 = 'bastard-gan-punks-v2',
     waifusion = 'waifusion',
-    chubbies = 'chubbies'
+    chubbies = 'chubbies',
+    crypteriors = 'crypteriors'
 }
 
 export enum ContractAddress {
@@ -43,7 +44,8 @@ export enum ContractAddress {
     waifusion = '0x2216d47494E516d8206B70FCa8585820eD3C4946',
     chubbies = '0x1db61fc42a843bad4d91a2d788789ea4055b8613',
     maskSushi = '0xfd38565ef22299d491055f0c508f62dd9a669f0f',
-    weth = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    weth = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    crypteriors = '0x417cf58dC18edd17025689D13AF2b85F403E130C'
 }
 
 export class Query {

@@ -29,6 +29,7 @@ export class Web3Interface {
     chubbies: contractInfo
     wethInfo: contractInfo
     maskSushi: contractInfo
+    crypteriors: contractInfo
     hashmasksInstance: Contract
     ganV2Instance: Contract
     waifuInstance: Contract
@@ -36,6 +37,7 @@ export class Web3Interface {
     chubbiesInstance: Contract
     wethInstance: Contract
     maskSushiInstance: Contract
+    crypteriorsInstance: Contract
     
     constructor(infuraApiKeys: Array<string>) {
         const infuraUrls = infuraApiKeys.map((key: string) => {
@@ -80,6 +82,10 @@ export class Web3Interface {
             CONTRACT_ABI: require('./ABI/masksushiswap_ABI.json'),
             CONTRACT_ADDRESS: ContractAddress.maskSushi
         }
+        this.crypteriors = {
+            CONTRACT_ABI: require('./ABI/crypteriors_ABI.json'),
+            CONTRACT_ADDRESS: ContractAddress.crypteriors
+        }
 
         this.hashmasksInstance = new this.web3.eth.Contract(this.hashmasks.CONTRACT_ABI, this.hashmasks.CONTRACT_ADDRESS)
         this.ganV2Instance = new this.web3.eth.Contract(this.ganV2.CONTRACT_ABI, this.ganV2.CONTRACT_ADDRESS)
@@ -88,6 +94,7 @@ export class Web3Interface {
         this.chubbiesInstance = new this.web3.eth.Contract(this.chubbies.CONTRACT_ABI, this.chubbies.CONTRACT_ADDRESS)
         this.wethInstance = new this.web3.eth.Contract(this.wethInfo.CONTRACT_ABI, this.wethInfo.CONTRACT_ADDRESS)
         this.maskSushiInstance = new this.web3.eth.Contract(this.maskSushi.CONTRACT_ABI, this.maskSushi.CONTRACT_ADDRESS)
+        this.crypteriorsInstance = new this.web3.eth.Contract(this.crypteriors.CONTRACT_ABI, this.crypteriors.CONTRACT_ADDRESS)
     }
 
     async GetMASKPrice(): Promise<number> {

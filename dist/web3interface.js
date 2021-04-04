@@ -63,6 +63,10 @@ class Web3Interface {
             CONTRACT_ABI: require('./ABI/masksushiswap_ABI.json'),
             CONTRACT_ADDRESS: types_1.ContractAddress.maskSushi
         };
+        this.crypteriors = {
+            CONTRACT_ABI: require('./ABI/crypteriors_ABI.json'),
+            CONTRACT_ADDRESS: types_1.ContractAddress.crypteriors
+        };
         this.hashmasksInstance = new this.web3.eth.Contract(this.hashmasks.CONTRACT_ABI, this.hashmasks.CONTRACT_ADDRESS);
         this.ganV2Instance = new this.web3.eth.Contract(this.ganV2.CONTRACT_ABI, this.ganV2.CONTRACT_ADDRESS);
         this.waifuInstance = new this.web3.eth.Contract(this.waifu.CONTRACT_ABI, this.waifu.CONTRACT_ADDRESS);
@@ -70,6 +74,7 @@ class Web3Interface {
         this.chubbiesInstance = new this.web3.eth.Contract(this.chubbies.CONTRACT_ABI, this.chubbies.CONTRACT_ADDRESS);
         this.wethInstance = new this.web3.eth.Contract(this.wethInfo.CONTRACT_ABI, this.wethInfo.CONTRACT_ADDRESS);
         this.maskSushiInstance = new this.web3.eth.Contract(this.maskSushi.CONTRACT_ABI, this.maskSushi.CONTRACT_ADDRESS);
+        this.crypteriorsInstance = new this.web3.eth.Contract(this.crypteriors.CONTRACT_ABI, this.crypteriors.CONTRACT_ADDRESS);
     }
     GetMASKPrice() {
         return __awaiter(this, void 0, void 0, function* () {

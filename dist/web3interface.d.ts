@@ -20,6 +20,7 @@ export declare class Web3Interface {
     chubbies: contractInfo;
     wethInfo: contractInfo;
     maskSushi: contractInfo;
+    crypteriors: contractInfo;
     hashmasksInstance: Contract;
     ganV2Instance: Contract;
     waifuInstance: Contract;
@@ -27,6 +28,7 @@ export declare class Web3Interface {
     chubbiesInstance: Contract;
     wethInstance: Contract;
     maskSushiInstance: Contract;
+    crypteriorsInstance: Contract;
     constructor(infuraApiKeys: Array<string>);
     GetMASKPrice(): Promise<number>;
     GetEthBalance(address: string): Promise<number>;
