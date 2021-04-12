@@ -1,6 +1,14 @@
-const winston = require('winston')
-const parentLogger = winston.loggers.get('default')
-const logger = parentLogger.child({module: 'csvGenerator'})
+import winston from 'winston'
+// const parentLogger = winston.loggers.get('default')
+// const logger = parentLogger.child({module: 'csvGenerator'})
+
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.prettyPrint(),
+    transports: [
+        new winston.transports.Console()
+    ]
+})
 
 import { ContractAddress, CollectionSlug, Asset, ApiError, GqlApiError, ValidateResponseError } from './types'
 import { OpenSeaLib } from './opensealib'
